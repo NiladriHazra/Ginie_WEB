@@ -30,9 +30,9 @@ const Page = () => {
 
   // Images for the slider - Removed back1 and back2
   const sliderImages = [
-    "/assets/back3.jpg",
-    "/assets/back2.jpg",
+    "/assets/three.jpg",
     "/assets/four.jpg",
+    "/assets/one.jpg",
   ];
 
   // Load download count from localStorage on component mount
@@ -320,6 +320,162 @@ const Page = () => {
             </div>
           </div>
         </header>
+        
+        {/* App Screenshots Section */}
+        <section id="screenshots" className="py-20 bg-gray-900">
+          <div className="container mx-auto px-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <span className="inline-block px-3 py-1 rounded-full bg-purple-900/50 backdrop-blur-sm border border-purple-800 mb-4">
+                <span className="text-purple-300 font-medium text-sm">✨ Visual Experience</span>
+              </span>
+              <h2 className="text-4xl font-bold">
+                App <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">Screenshots</span>
+              </h2>
+            </motion.div>
+            
+            <div className="relative">
+              {/* Gradient overlay on sides for scrolling indication */}
+              <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-gray-900 to-transparent z-10"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-900 to-transparent z-10"></div>
+              
+              <div className="flex overflow-x-auto py-8 space-x-6 scrollbar-hide px-6">
+                {/* {sliderImages.map((image, index) => (
+                  <motion.div 
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.2 }}
+                    whileHover={{ scale: 1.05, y: -10 }}
+                    className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
+                  >
+                    <Image 
+                      src={image} 
+                      alt={`GinieAI App Screenshot ${index + 1}`} 
+                      fill
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                      style={{ objectFit: 'cover' }}
+                    />
+                    
+                    
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                      <h4 className="text-lg font-semibold">
+                        {index === 0 ? "Movie AI" : index === 1 ? "Movie Page" : "Search Results"}
+                      </h4>
+                    </div>
+                  </motion.div>
+                ))} */}
+                
+                {/* Additional screenshots with different images reused */}
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
+                >
+                  <Image 
+                    src="/assets/back3.jpg" 
+                    alt="GinieAI App Screenshot 4" 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h4 className="text-lg font-semibold ">Genie AI</h4>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
+                >
+                  <Image 
+                    src="/assets/back2.jpg" 
+                    alt="GinieAI App Screenshot 4" 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h4 className="text-lg font-semibold">Movie Page</h4>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
+                >
+                  <Image 
+                    src="/assets/four.jpg" 
+                    alt="GinieAI App Screenshot 4" 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h4 className="text-lg font-semibold">Search Results</h4>
+                  </div>
+                </motion.div>
+
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
+                >
+                  <Image 
+                    src="/assets/back1.jpg" 
+                    alt="GinieAI App Screenshot 4" 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h4 className="text-lg font-semibold">Cast Details</h4>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.8 }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
+                >
+                  <Image 
+                    src="/assets/one.jpg" 
+                    alt="GinieAI App Screenshot 5" 
+                    fill
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h4 className="text-lg font-semibold">Trending Section</h4>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
 
         {/* Features Section */}
         <section id="features" className="py-20 bg-gradient-to-b from-gray-900 to-gray-800">
@@ -420,160 +576,7 @@ const Page = () => {
           </div>
         </section>
 
-        {/* App Screenshots Section */}
-        <section id="screenshots" className="py-20 bg-gray-900">
-          <div className="container mx-auto px-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <span className="inline-block px-3 py-1 rounded-full bg-purple-900/50 backdrop-blur-sm border border-purple-800 mb-4">
-                <span className="text-purple-300 font-medium text-sm">✨ Visual Experience</span>
-              </span>
-              <h2 className="text-4xl font-bold">
-                App <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">Screenshots</span>
-              </h2>
-            </motion.div>
-            
-            <div className="relative">
-              {/* Gradient overlay on sides for scrolling indication */}
-              <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-gray-900 to-transparent z-10"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-900 to-transparent z-10"></div>
-              
-              <div className="flex overflow-x-auto py-8 space-x-6 scrollbar-hide px-6">
-                {/* {sliderImages.map((image, index) => (
-                  <motion.div 
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.2 }}
-                    whileHover={{ scale: 1.05, y: -10 }}
-                    className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
-                  >
-                    <Image 
-                      src={image} 
-                      alt={`GinieAI App Screenshot ${index + 1}`} 
-                      fill
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                      style={{ objectFit: 'cover' }}
-                    />
-                    
-                    
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                      <h4 className="text-lg font-semibold">
-                        {index === 0 ? "Movie AI" : index === 1 ? "Movie Page" : "Search Results"}
-                      </h4>
-                    </div>
-                  </motion.div>
-                ))} */}
-                
-                {/* Additional screenshots with different images reused */}
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
-                >
-                  <Image 
-                    src="/assets/back3.jpg" 
-                    alt="GinieAI App Screenshot 4" 
-                    fill
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h4 className="text-lg font-semibold">Genie AI</h4>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
-                >
-                  <Image 
-                    src="/assets/back2.jpg" 
-                    alt="GinieAI App Screenshot 4" 
-                    fill
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h4 className="text-lg font-semibold">Movie Page</h4>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
-                >
-                  <Image 
-                    src="/assets/four.jpg" 
-                    alt="GinieAI App Screenshot 4" 
-                    fill
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h4 className="text-lg font-semibold">Search Results</h4>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.6 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
-                >
-                  <Image 
-                    src="/assets/back1.jpg" 
-                    alt="GinieAI App Screenshot 4" 
-                    fill
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h4 className="text-lg font-semibold">Cast Details</h4>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.8 }}
-                  whileHover={{ scale: 1.05, y: -10 }}
-                  className="flex-shrink-0 w-64 h-[32rem] md:w-72 md:h-[36rem] relative rounded-3xl overflow-hidden shadow-xl shadow-purple-500/30 border border-gray-700"
-                >
-                  <Image 
-                    src="/assets/one.jpg" 
-                    alt="GinieAI App Screenshot 5" 
-                    fill
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    style={{ objectFit: 'cover' }}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                    <h4 className="text-lg font-semibold">Trending Section</h4>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </section>
+        
 
         {/* Testimonials Section - New addition */}
         <section className="py-16 bg-gradient-to-b from-gray-900 to-purple-900/60">
@@ -698,7 +701,7 @@ const Page = () => {
               Download APK
             </button>
             <a 
-              href="https://github.com/pixelniladri" 
+              href="https://github.com/NiladriHazra" 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 px-8 rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
@@ -826,7 +829,7 @@ const Page = () => {
       </div>
       
       <div className="flex space-x-6 mb-6 md:mb-0">
-        <a href="#features" className="text-gray-400 hover:text-purple-400 transition-colors duration-300">Features</a>
+        <a href="#features" className="  text-gray-400  hover:text-purple-400 transition-colors duration-300">Features</a>
         <a href="#screenshots" className="text-gray-400 hover:text-purple-400 transition-colors duration-300">Screenshots</a>
         <a href="#download" className="text-gray-400 hover:text-purple-400 transition-colors duration-300">Download</a>
       </div>
