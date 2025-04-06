@@ -1476,7 +1476,7 @@ const Page = () => {
                 &copy; {new Date().getFullYear()} GinieAI. All rights reserved.
               </p>
               <p className="text-gray-500 text-sm mt-4 md:mt-0">
-                Designed with ❤️ by PixelNiladri
+                Designed with ❤️ by Niladri Hazra
               </p>
             </div>
           </div>
