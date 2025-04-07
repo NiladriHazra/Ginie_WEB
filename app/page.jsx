@@ -220,7 +220,7 @@ const Page = () => {
             className="absolute z-20 w-28 h-28 rounded-full overflow-hidden"
           >
             <Image 
-  src="/assets/ginie2.png" 
+  src="/assets/logo3.png" 
   alt="GinieAI Logo" 
   fill
   loading="lazy"
@@ -294,7 +294,7 @@ const Page = () => {
                 className="mr-3 w-10 h-10 relative"
               >
                 <Image 
-  src="/assets/ginie2.png" 
+  src="/assets/logo3.png" 
   alt="GinieAI Logo" 
   fill
   loading="lazy"
@@ -1209,7 +1209,7 @@ const Page = () => {
                         <div className="w-full h-full bg-gradient-to-br from-purple-900 to-black flex items-center justify-center">
                           <div className="relative w-32 h-32">
                           <Image 
-  src="/assets/ginie2.png" 
+  src="/assets/logo3.png" 
   alt="GinieAI Logo" 
   fill
   loading="lazy"
@@ -1387,7 +1387,7 @@ const Page = () => {
                     className="w-10 h-10 relative mr-3"
                   >
                     <Image 
-  src="/assets/ginie2.png" 
+  src="/assets/logo3.png" 
   alt="GinieAI Logo" 
   fill
   loading="lazy"
