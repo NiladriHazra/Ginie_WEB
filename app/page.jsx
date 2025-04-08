@@ -211,30 +211,30 @@ const Page = () => {
     {
       content:
         "Ginie AI has completely transformed how I discover movies. The mood-based recommendations are spot-on and the AI assistant feels like having a film expert in my pocket. I've discovered so many hidden gems I would have never found otherwise.",
-      author: "Sarah K.",
+      author: "Eesha S.",
       role: "Film Enthusiast",
-      avatar: "https://randomuser.me/api/portraits/women/41.jpg",
+      avatar: "https://randomuser.me/api/portraits/women/99.jpg",
     },
     {
       content:
         "As someone who travels frequently, finding good content quickly is essential. Ginie's AI understands my taste perfectly and the clean interface makes browsing effortless. The personalized recommendations have been incredibly accurate.",
       author: "Michael T.",
-      role: "Business Traveler",
+      role: "Content Creator",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     },
     {
       content:
         "I've tried many movie apps, but Ginie AI is in a league of its own. The AI chat feature is brilliant - I can describe vague movie plots and it figures out exactly what I'm looking for. My entire family uses it and we each get our own tailored recommendations.",
-      author: "Raj M.",
-      role: "Tech Blogger",
+      author: "Eidena R.",
+      role: "Ex Google Engineer",
       avatar: "https://randomuser.me/api/portraits/men/68.jpg",
     },
     {
       content:
         "The mood-based recommendation system is genius! On days when I'm feeling down, Ginie suggests uplifting movies that genuinely help improve my mood. It's like the app understands not just what I want to watch but what I need to watch.",
-      author: "Elena D.",
+      author: "Rupam D.",
       role: "Psychologist & Film Lover",
-      avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+      avatar: "https://randomuser.me/api/portraits/men/50.jpg",
     },
   ];
 
@@ -983,7 +983,7 @@ const Page = () => {
             >
               {[
                 {
-                  value: "10K+",
+                  value: "100K+",
                   label: "Movies & Shows",
                   color: "from-purple-400 to-purple-600",
                 },
@@ -993,7 +993,7 @@ const Page = () => {
                   color: "from-pink-400 to-pink-600",
                 },
                 {
-                  value: "6",
+                  value: "8",
                   label: "Mood Categories",
                   color: "from-blue-400 to-blue-600",
                 },
