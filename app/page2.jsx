@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import {
   motion,
   AnimatePresence,
@@ -30,6 +31,7 @@ import {
   MdOutlineHighQuality,
   MdDownload,
   MdSpeed,
+  MdAdminPanelSettings,
 } from "react-icons/md";
 import { IoMdGlobe } from "react-icons/io";
 import { HiOutlineCursorClick } from "react-icons/hi";
@@ -77,6 +79,7 @@ const Page = () => {
   const aiRef = useRef(null);
   const testimonialsRef = useRef(null);
   const downloadRef = useRef(null);
+  const topRef = useRef(null);  // Add this ref for scrolling to top
   const heroInView = useInView(heroRef, { once: false, amount: 0.1 });
 
   // Scroll progress for parallax effects
@@ -363,25 +366,32 @@ const Page = () => {
   }, [phoneImages.length]);
 
   // Add this effect to prevent body scrolling when modal is open
-useEffect(() => {
-  if (showDownloadModal) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = 'auto';
-  }
+  // useEffect(() => {
+  //   if (showDownloadModal) {
+  //     document.body.style.overflow = 'hidden';
+  //   } else {
+  //     document.body.style.overflow = 'auto';
+  //   }
 
-  return () => {
-    document.body.style.overflow = 'auto';
-  };
-}, [showDownloadModal]);
+  //   return () => {
+  //     document.body.style.overflow = 'auto';
+  //   };
+  // }, [showDownloadModal]);
 
   // Handle download click with Google Drive link
-  // Replace your existing handleDownload function
   const handleDownload = () => {
-    console.log("Download button clicked"); // Add this debug line
-    setShowDownloadModal(true);
-    console.log("Modal state after click:", showDownloadModal); // Add this debug line
+    console.log("Download button clicked");
+    // Scroll to top before showing modal
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    // Add a small delay before showing the modal to ensure smooth scrolling
+    setTimeout(() => {
+      setShowDownloadModal(true);
+    }, 500);
   };
+  
   // Add this new function to handle the actual download after form submission
   const handleDownloadSubmit = async (e) => {
     e.preventDefault();
@@ -396,6 +406,8 @@ useEffect(() => {
     }
 
     try {
+      console.log("Sending download data to API...");
+      
       // Send user data to your API
       const response = await fetch("/api/track-download", {
         method: "POST",
@@ -410,8 +422,13 @@ useEffect(() => {
         }),
       });
 
+      // Get the detailed response
+      const result = await response.json();
+      console.log("API response:", result);
+
       if (!response.ok) {
-        throw new Error("Failed to record download");
+        console.error("Server error details:", result);
+        throw new Error(result.details || result.error || "Failed to record download");
       }
 
       // Close modal and show thank you message
@@ -426,7 +443,7 @@ useEffect(() => {
       );
     } catch (error) {
       console.error("Download tracking error:", error);
-      setFormError("Something went wrong. Please try again.");
+      setFormError(`Error: ${error.message || "Something went wrong. Please try again."}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -529,7 +546,7 @@ useEffect(() => {
         />
       </Head>
 
-      <div className="relative overflow-x-hidden bg-black text-white">
+      <div className="relative overflow-x-hidden bg-black text-white" ref={topRef}>
         {/* Sticky navbar with glass effect */}
         <motion.nav
           initial={{ y: -100, opacity: 0 }}
@@ -602,22 +619,36 @@ useEffect(() => {
               </a>
               <button
                 onClick={handleDownload}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center"
               >
                 <FaDownload className="mr-2" />
                 Download
               </button>
+              <Link 
+                href="/admin/downloads"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center"
+              >
+                <MdAdminPanelSettings className="mr-2" />
+                Admin
+              </Link>
             </div>
 
             {/* Mobile menu button */}
             <div className="md:hidden flex items-center space-x-4">
               <button
                 onClick={handleDownload}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center cursor-pointer transform transition-all duration-200 hover:scale-105 shadow-lg"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center"
               >
                 <FaDownload className="mr-2" size={14} />
                 <span className="text-sm">Download</span>
               </button>
+              <Link
+                href="/admin/downloads"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center"
+              >
+                <MdAdminPanelSettings className="mr-2" size={14} />
+                <span className="text-sm">Admin</span>
+              </Link>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10"
@@ -790,7 +821,7 @@ useEffect(() => {
                 >
                   <button
                     onClick={handleDownload}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
                   >
                     <FaDownload className="mr-2" />
                     Download Now
@@ -1058,7 +1089,7 @@ useEffect(() => {
               className="w-full h-16 text-gray-950"
             >
               <path
-                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,120.83,111.44,181.67,85.45c93.34-33.33,185.36-56,290.82-58.83Z"
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,120.83,111.16,321.39,56.44Z"
                 fill="currentColor"
               ></path>
             </svg>
@@ -1151,12 +1182,12 @@ useEffect(() => {
                     <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-xl"></div>
 
                     {/* Feature icon with improved styling */}
-                    <div className="mb-6 p-4 bg-black/50 rounded-2xl inline-block group-hover:bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-300 relative z-10 border border-gray-700 group-hover:border-transparent">
+                    <div className="mb-6 p-4 bg-black/50 rounded-2xl inline-block group-hover:bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-300 relative z-10 border border-gray-800 group-hover:border-pink-500/50">
                       {feature.icon}
                     </div>
 
                     {/* Feature title with animated gradient text on hover */}
-                    <h3 className="text-xl font-semibold mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-600 transition-all duration-300 relative z-10">
+                    <h3 className="text-xl font-semibold mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-600 transition-colors duration-300 relative z-10">
                       {feature.title}
                     </h3>
 
@@ -1370,7 +1401,7 @@ useEffect(() => {
                       transition={{ delay: 0.3 }}
                       className="mb-8 flex"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
                         <GiBrain className="text-white text-xs" />
                       </div>
                       <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
@@ -1388,10 +1419,9 @@ useEffect(() => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 }}
-                      className="mb-6"
-                    >
+                      className="mb-6"                    >
                       <div className="flex justify-end">
-                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
+                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/20">
                           <p className="text-white">
                             {aiConversations[0].question}
                           </p>
@@ -1411,7 +1441,7 @@ useEffect(() => {
                       transition={{ delay: 0.7 }}
                       className="mb-8 flex"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
                         <GiBrain className="text-white text-xs" />
                       </div>
                       <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
@@ -1486,7 +1516,7 @@ useEffect(() => {
                       className="mb-6"
                     >
                       <div className="flex justify-end">
-                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
+                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/20">
                           <p className="text-white">
                             Tell me more about Interstellar
                           </p>
@@ -1506,7 +1536,7 @@ useEffect(() => {
                       transition={{ delay: 1.5 }}
                       className="mb-6 flex"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
                         <GiBrain className="text-white text-xs" />
                       </div>
 
@@ -1593,7 +1623,7 @@ useEffect(() => {
 
                   {/* Enhanced chat input with animations */}
                   <div className="bg-gradient-to-r from-gray-900/90 to-gray-800/90 px-4 py-4 border-t border-white/10 flex items-center">
-                    <div className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center group focus-within:border-purple-500/50 focus-within:bg-white/10 transition-all duration-300">
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center group focus-within:border-purple-500/50 focus-within:bg-white/10 transition-colors duration-300">
                       <input
                         type="text"
                         placeholder="Ask Ginie about movies and shows..."
@@ -1749,9 +1779,9 @@ useEffect(() => {
                         viewport={{ once: true }}
                         transition={{ delay: 0.7 + index * 0.15 }}
                         whileHover={{ scale: 1.03, y: -5 }}
-                        className="flex p-5 rounded-2xl bg-gradient-to-br from-gray-900 to-black/60 backdrop-blur-md border border-white/10 shadow-xl group transition-all duration-300 hover:shadow-purple-500/10"
+                        className="flex p-5 rounded-2xl bg-gradient-to-br from-gray-900 to-black/60 backdrop-blur-md border border-white/10 shadow-xl group transition-all duration-300 hover:shadow-purple-500/10 hover:border-purple-500/30"
                       >
-                        <div className="mr-5 p-4 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-inner group-hover:from-purple-900/30 group-hover:to-pink-900/30 transition-all duration-300 border border-white/5">
+                        <div className="mr-5 p-4 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-inner group-hover:from-purple-900/30 group-hover:to-pink-900/30 transition-all duration-300 border border-gray-800 group-hover:border-purple-500/20">
                           {feature.icon}
                         </div>
                         <div>
@@ -1772,7 +1802,7 @@ useEffect(() => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 1 }}
-                    className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-purple-500/20 transition-all duration-500"
+                    className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500"
                   >
                     {/* Animated background gradient */}
                     <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-pink-900/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
@@ -1968,7 +1998,7 @@ useEffect(() => {
                       onClick={handleDownload}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center mx-auto transition-all"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300"
                     >
                       <FaDownload className="mr-2" />
                       Get Ginie AI Now
@@ -1979,960 +2009,960 @@ useEffect(() => {
             </div>
           </div>
         </section>
-
         {/* Screenshots Section with 3D carousel */}
-        <section
-          id="screenshots"
-          ref={screenshotsRef}
-          className="py-24 bg-gradient-to-b from-black to-gray-950 relative will-change-transform"
-        >
-          {/* Abstract background shapes */}
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute w-full h-full bg-gradient-to-b from-black via-purple-950/10 to-black"></div>
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/10 to-pink-900/10 rounded-full blur-3xl particle-animation"
-            ></motion.div>
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/10 to-blue-900/10 rounded-full blur-3xl particle-animation"
-            ></motion.div>
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
-                <span className="text-purple-300 font-medium text-sm">
-                  ✨ APP SHOWCASE
-                </span>
-              </span>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Beautiful{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
-                  Interface
-                </span>
-              </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                Experience our thoughtfully designed UI that combines aesthetics
-                with functionality for an immersive movie discovery journey.
-              </p>
-            </motion.div>
-
-            {/* 3D Screenshot Showcase */}
-            <div className="relative mt-20 mb-10 overflow-hidden">
-              <div className="flex items-center justify-center pb-20">
-                <div className="relative w-full max-w-5xl">
-                  {/* Device frame with current screenshot */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative mx-auto w-72 h-[36rem] md:w-80 md:h-[40rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-2xl shadow-purple-500/20 z-30"
-                  >
-                    {/* Animated screen transition */}
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={currentSlide}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="absolute inset-0"
-                      >
-                        <Image
-                          src={screenshots[currentSlide].image}
-                          alt={screenshots[currentSlide].title}
-                          fill
-                          sizes="(max-width: 768px) 288px, 320px"
-                          style={{ objectFit: "cover" }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 pb-8">
-                          <h4 className="text-xl font-semibold mb-2">
-                            {screenshots[currentSlide].title}
-                          </h4>
-                          <p className="text-gray-400 text-sm">
-                            {screenshots[currentSlide].description}
-                          </p>
+                <section
+                  id="screenshots"
+                  ref={screenshotsRef}
+                  className="py-24 bg-gradient-to-b from-black to-gray-950 relative will-change-transform"
+                >
+                  {/* Abstract background shapes */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    <div className="absolute w-full h-full bg-gradient-to-b from-black via-purple-950/10 to-black"></div>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+                      className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/10 to-pink-900/10 rounded-full blur-3xl particle-animation"
+                    ></motion.div>
+                    <motion.div
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+                      className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/10 to-blue-900/10 rounded-full blur-3xl particle-animation"
+                    ></motion.div>
+                  </div>
+        
+                  <div className="container mx-auto px-4 relative z-10">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="text-center mb-16"
+                    >
+                      <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
+                        <span className="text-purple-300 font-medium text-sm">
+                          ✨ APP SHOWCASE
+                        </span>
+                      </span>
+                      <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                        Beautiful{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
+                          Interface
+                        </span>
+                      </h2>
+                      <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                        Experience our thoughtfully designed UI that combines aesthetics
+                        with functionality for an immersive movie discovery journey.
+                      </p>
+                    </motion.div>
+        
+                    {/* 3D Screenshot Showcase */}
+                    <div className="relative mt-20 mb-10 overflow-hidden">
+                      <div className="flex items-center justify-center pb-20">
+                        <div className="relative w-full max-w-5xl">
+                          {/* Device frame with current screenshot */}
+                          <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="relative mx-auto w-72 h-[36rem] md:w-80 md:h-[40rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-2xl shadow-purple-500/20 z-30"
+                          >
+                            {/* Animated screen transition */}
+                            <AnimatePresence mode="wait">
+                              <motion.div
+                                key={currentSlide}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="absolute inset-0"
+                              >
+                                <Image
+                                  src={screenshots[currentSlide].image}
+                                  alt={screenshots[currentSlide].title}
+                                  fill
+                                  sizes="(max-width: 768px) 288px, 320px"
+                                  style={{ objectFit: "cover" }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 pb-8">
+                                  <h4 className="text-xl font-semibold mb-2">
+                                    {screenshots[currentSlide].title}
+                                  </h4>
+                                  <p className="text-gray-400 text-sm">
+                                    {screenshots[currentSlide].description}
+                                  </p>
+                                </div>
+                              </motion.div>
+                            </AnimatePresence>
+        
+                            {/* Phone notch */}
+                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-7 bg-black rounded-b-xl z-20"></div>
+        
+                            {/* Screen reflection overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none"></div>
+                          </motion.div>
+        
+                          {/* Background phones showing previous and next screenshots */}
+                          <motion.div
+                            initial={{
+                              opacity: 0,
+                              x: -180,
+                              y: 40,
+                              scale: 0.8,
+                              rotateY: 30,
+                            }}
+                            animate={{
+                              opacity: 0.7,
+                              x: -180,
+                              y: 40,
+                              scale: 0.8,
+                              rotateY: 30,
+                            }}
+                            className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
+                          >
+                            <Image
+                              src={
+                                screenshots[
+                                  (currentSlide - 1 + screenshots.length) %
+                                    screenshots.length
+                                ].image
+                              }
+                              alt="Previous screenshot"
+                              fill
+                              sizes="288px"
+                              style={{ objectFit: "cover" }}
+                            />
+                            <div className="absolute inset-0 bg-black/40"></div>
+                          </motion.div>
+        
+                          <motion.div
+                            initial={{
+                              opacity: 0,
+                              x: 180,
+                              y: 40,
+                              scale: 0.8,
+                              rotateY: -30,
+                            }}
+                            animate={{
+                              opacity: 0.7,
+                              x: 180,
+                              y: 40,
+                              scale: 0.8,
+                              rotateY: -30,
+                            }}
+                            className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
+                          >
+                            <Image
+                              src={
+                                screenshots[(currentSlide + 1) % screenshots.length]
+                                  .image
+                              }
+                              alt="Next screenshot"
+                              fill
+                              sizes="288px"
+                              style={{ objectFit: "cover" }}
+                            />
+                            <div className="absolute inset-0 bg-black/40"></div>
+                          </motion.div>
                         </div>
-                      </motion.div>
-                    </AnimatePresence>
-
-                    {/* Phone notch */}
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-7 bg-black rounded-b-xl z-20"></div>
-
-                    {/* Screen reflection overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none"></div>
-                  </motion.div>
-
-                  {/* Background phones showing previous and next screenshots */}
-                  <motion.div
-                    initial={{
-                      opacity: 0,
-                      x: -180,
-                      y: 40,
-                      scale: 0.8,
-                      rotateY: 30,
-                    }}
-                    animate={{
-                      opacity: 0.7,
-                      x: -180,
-                      y: 40,
-                      scale: 0.8,
-                      rotateY: 30,
-                    }}
-                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
-                  >
-                    <Image
-                      src={
-                        screenshots[
-                          (currentSlide - 1 + screenshots.length) %
-                            screenshots.length
-                        ].image
-                      }
-                      alt="Previous screenshot"
-                      fill
-                      sizes="288px"
-                      style={{ objectFit: "cover" }}
-                    />
-                    <div className="absolute inset-0 bg-black/40"></div>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{
-                      opacity: 0,
-                      x: 180,
-                      y: 40,
-                      scale: 0.8,
-                      rotateY: -30,
-                    }}
-                    animate={{
-                      opacity: 0.7,
-                      x: 180,
-                      y: 40,
-                      scale: 0.8,
-                      rotateY: -30,
-                    }}
-                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
-                  >
-                    <Image
-                      src={
-                        screenshots[(currentSlide + 1) % screenshots.length]
-                          .image
-                      }
-                      alt="Next screenshot"
-                      fill
-                      sizes="288px"
-                      style={{ objectFit: "cover" }}
-                    />
-                    <div className="absolute inset-0 bg-black/40"></div>
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* Navigation dots */}
-              <div className="flex justify-center space-x-3 mt-6">
-                {screenshots.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      currentSlide === index
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 w-6"
-                        : "bg-gray-600 hover:bg-gray-500"
-                    }`}
-                    aria-label={`Go to slide ${index + 1}`}
-                  ></button>
-                ))}
-              </div>
-            </div>
-
-            {/* Feature highlights with icons */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-              {[
-                {
-                  icon: (
-                    <MdOutlineHighQuality className="text-purple-500 text-2xl" />
-                  ),
-                  title: "Elegant Design",
-                  description:
-                    "Clean, intuitive interface with smooth animations and thoughtful visual hierarchy for effortless navigation.",
-                },
-                {
-                  icon: (
-                    <HiOutlineCursorClick className="text-pink-500 text-2xl" />
-                  ),
-                  title: "Gesture Controls",
-                  description:
-                    "Swipe, tap, and scroll your way through content with natural, fluid gesture-based interactions.",
-                },
-                {
-                  icon: <MdOutlineDevices className="text-blue-500 text-2xl" />,
-                  title: "Cross-platform",
-                  description:
-                    "Seamless experience across all your devices with perfect synchronization of your preferences.",
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className="flex items-start p-6 bg-white/5 backdrop-blur-md rounded-xl border border-white/5"
-                >
-                  <div className="mr-4 p-3 rounded-full bg-white/10">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                    <p className="text-gray-400">{item.description}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section with improved cards */}
-        <section
-          id="testimonials"
-          ref={testimonialsRef}
-          className="py-24 bg-gray-950 will-change-transform"
-        >
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
-                <span className="text-purple-300 font-medium text-sm">
-                  ✨ USER STORIES
-                </span>
-              </span>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                What Users{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
-                  Love
-                </span>
-              </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                Join thousands of satisfied users who've transformed how they
-                discover movies and TV shows with Ginie AI.
-              </p>
-            </motion.div>
-
-            {/* Premium testimonial cards with user avatars and ratings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -5, scale: 1.02 }}
-                  className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-900/20 relative overflow-hidden group"
-                >
-                  {/* Animated background gradient */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-pink-900/10 z-0"
-                  ></motion.div>
-
-                  {/* Decorative quote mark */}
-                  <div className="absolute right-8 top-8 text-purple-500/10 text-9xl font-serif leading-none">
-                    "
-                  </div>
-
-                  <div className="relative z-10">
-                    {/* Star rating */}
-                    <div className="flex items-center mb-6">
-                      <div className="text-yellow-500 flex">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar key={i} className="mr-1" />
+                      </div>
+        
+                      {/* Navigation dots */}
+                      <div className="flex justify-center space-x-3 mt-6">
+                        {screenshots.map((_, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setCurrentSlide(index)}
+                            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                              currentSlide === index
+                                ? "bg-gradient-to-r from-purple-500 to-pink-500 w-6"
+                                : "bg-gray-600 hover:bg-gray-500"
+                            }`}
+                            aria-label={`Go to slide ${index + 1}`}
+                          ></button>
                         ))}
                       </div>
                     </div>
-
-                    {/* Testimonial content */}
-                    <p className="text-gray-300 text-lg mb-8 italic">
-                      "{testimonial.content}"
-                    </p>
-
-                    {/* User info with avatar */}
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-purple-500">
-                        <Image
-                          src={testimonial.avatar}
-                          alt={testimonial.author}
-                          width={48}
-                          height={48}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-                          {testimonial.author}
-                        </h4>
-                        <p className="text-gray-400 text-sm">
-                          {testimonial.role}
-                        </p>
-                      </div>
+        
+                    {/* Feature highlights with icons */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
+                      {[
+                        {
+                          icon: (
+                            <MdOutlineHighQuality className="text-purple-500 text-2xl" />
+                          ),
+                          title: "Elegant Design",
+                          description:
+                            "Clean, intuitive interface with smooth animations and thoughtful visual hierarchy for effortless navigation.",
+                        },
+                        {
+                          icon: (
+                            <HiOutlineCursorClick className="text-pink-500 text-2xl" />
+                          ),
+                          title: "Gesture Controls",
+                          description:
+                            "Swipe, tap, and scroll your way through content with natural, fluid gesture-based interactions.",
+                        },
+                        {
+                          icon: <MdOutlineDevices className="text-blue-500 text-2xl" />,
+                          title: "Cross-platform",
+                          description:
+                            "Seamless experience across all your devices with perfect synchronization of your preferences.",
+                        },
+                      ].map((item, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.2 + index * 0.1 }}
+                          className="flex items-start p-6 bg-white/5 backdrop-blur-md rounded-xl border border-white/5"
+                        >
+                          <div className="mr-4 p-3 rounded-full bg-white/10">
+                            {item.icon}
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                            <p className="text-gray-400">{item.description}</p>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
                   </div>
-
-                  {/* Subtle border glow effect on hover */}
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileHover={{ opacity: 1 }}
-                    className="absolute inset-0 border border-purple-500/30 rounded-2xl"
-                  ></motion.div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section with premium accordions */}
-        <section id="faq" className="py-24 bg-black will-change-transform">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
-                <span className="text-purple-300 font-medium text-sm">
-                  ✨ QUESTIONS ANSWERED
-                </span>
-              </span>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Frequently Asked{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
-                  Questions
-                </span>
-              </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-                Everything you need to know about Ginie AI and its features.
-              </p>
-            </motion.div>
-
-            {/* Enhanced FAQ accordions */}
-            <div className="max-w-3xl mx-auto">
-              {faqs.map((faq, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="mb-6"
+                </section>
+        
+                {/* Testimonials Section with improved cards */}
+                <section
+                  id="testimonials"
+                  ref={testimonialsRef}
+                  className="py-24 bg-gray-950 will-change-transform"
                 >
-                  <details className="group">
-                    <summary className="flex items-center justify-between cursor-pointer bg-gray-900 hover:bg-gray-800 p-6 rounded-xl border border-purple-900/20 transition-colors duration-300">
-                      <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-400">
-                        {faq.question}
-                      </h3>
-                      <div className="ml-4 flex-shrink-0 bg-white/10 p-2 rounded-full group-open:bg-purple-600 transition-colors duration-300">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 transform group-open:rotate-180 transition-transform duration-300"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </div>
-                    </summary>
+                  <div className="container mx-auto px-4">
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="px-6 pt-0 overflow-hidden bg-gradient-to-br from-gray-900 to-gray-900/50 rounded-b-xl border-x border-b border-purple-900/20"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="text-center mb-16"
                     >
-                      <p className="py-6 text-gray-300">{faq.answer}</p>
-                    </motion.div>
-                  </details>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Still have questions section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="mt-16 text-center"
-            >
-              <p className="text-gray-400">Still have questions?</p>
-              <a
-                href="https://x.com/PixelNiladri"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center mt-3 text-purple-400 hover:text-purple-300 transition-colors duration-300"
-              >
-                Contact our support team
-                <FaChevronRight className="ml-2 text-xs" />
-              </a>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Download Section with advanced design elements */}
-        <section
-          id="download"
-          ref={downloadRef}
-          className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-950 to-black will-change-transform"
-        >
-          {/* Animated background elements */}
-          <div className="absolute inset-0">
-            <motion.div
-              animate={{
-                rotate: [0, 360],
-                scale: [1, 1.1, 1],
-                opacity: [0.3, 0.4, 0.3],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 30,
-                ease: "linear",
-              }}
-              className="absolute -right-1/4 -top-1/4 w-1/2 h-1/2 bg-purple-700/10 rounded-full blur-3xl particle-animation"
-            ></motion.div>
-            <motion.div
-              animate={{
-                rotate: [0, -360],
-                scale: [1, 1.2, 1],
-                opacity: [0.2, 0.3, 0.2],
-              }}
-              transition={{
-                repeat: Infinity,
-                duration: 40,
-                ease: "linear",
-              }}
-              className="absolute -left-1/4 -bottom-1/4 w-1/2 h-1/2 bg-pink-700/10 rounded-full blur-3xl particle-animation"
-            ></motion.div>
-          </div>
-
-          <div className="container mx-auto px-4 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
-                <span className="text-purple-300 font-medium text-sm">
-                  ✨ GET STARTED
-                </span>
-              </span>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-                Download{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
-                  Ginie AI
-                </span>{" "}
-                Now
-              </h2>
-              <p className="text-gray-400 max-w-2xl mx-auto text-lg mb-8">
-                Join the movie discovery revolution. Experience the power of
-                AI-driven recommendations and mood-based content suggestions.
-              </p>
-            </motion.div>
-
-            {/* Enhanced download card with 3D elements and device mockups */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-gradient-to-br from-gray-900 to-black p-12 rounded-3xl max-w-5xl mx-auto border border-purple-800/30 shadow-2xl shadow-purple-500/10 relative overflow-hidden"
-            >
-              <div className="flex flex-col lg:flex-row items-center">
-                <div className="lg:w-1/2 mb-10 lg:mb-0">
-                  <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
-                    Discover your next favorite movie with AI
-                  </h3>
-                  <ul className="space-y-4 mb-8">
-                    {[
-                      {
-                        icon: <GiBrain className="text-purple-500" />,
-                        text: "AI-powered personalized movie recommendations",
-                      },
-                      {
-                        icon: <MdOutlineMood className="text-pink-500" />,
-                        text: "Mood-based content suggestions",
-                      },
-                      {
-                        icon: <BiSearchAlt className="text-blue-500" />,
-                        text: "Advanced natural language search",
-                      },
-                      {
-                        icon: <BsShieldCheck className="text-green-500" />,
-                        text: "Secure and private experience",
-                      },
-                    ].map((item, index) => (
-                      <li key={index} className="flex items-center">
-                        <span className="mr-3 p-2 bg-white/10 rounded-full">
-                          {item.icon}
+                      <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
+                        <span className="text-purple-300 font-medium text-sm">
+                          ✨ USER STORIES
                         </span>
-                        <span className="text-gray-300">{item.text}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <motion.button
-                    onClick={handleDownload}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all"
-                  >
-                    <FaDownload className="mr-2" />
-                    Download Now
-                  </motion.button>
-
-                  <p className="mt-6 text-gray-500 text-sm">
-                    Available for Android, iOS, and Web Browsers
-                  </p>
-                </div>
-
-                <div className="lg:w-1/2 flex justify-center">
-                  {/* 3D mockup of device with app logo */}
-                  <div className="relative perspective-1000">
+                      </span>
+                      <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                        What Users{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
+                          Love
+                        </span>
+                      </h2>
+                      <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                        Join thousands of satisfied users who've transformed how they
+                        discover movies and TV shows with Ginie AI.
+                      </p>
+                    </motion.div>
+        
+                    {/* Premium testimonial cards with user avatars and ratings */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {testimonials.map((testimonial, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                          whileHover={{ y: -5, scale: 1.02 }}
+                          className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-900/20 relative overflow-hidden group"
+                        >
+                          {/* Animated background gradient */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
+                            className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-pink-900/10 z-0"
+                          ></motion.div>
+        
+                          {/* Decorative quote mark */}
+                          <div className="absolute right-8 top-8 text-purple-500/10 text-9xl font-serif leading-none">
+                            "
+                          </div>
+        
+                          <div className="relative z-10">
+                            {/* Star rating */}
+                            <div className="flex items-center mb-6">
+                              <div className="text-yellow-500 flex">
+                                {[...Array(5)].map((_, i) => (
+                                  <FaStar key={i} className="mr-1" />
+                                ))}
+                              </div>
+                            </div>
+        
+                            {/* Testimonial content */}
+                            <p className="text-gray-300 text-lg mb-8 italic">
+                              "{testimonial.content}"
+                            </p>
+        
+                            {/* User info with avatar */}
+                            <div className="flex items-center">
+                              <div className="w-12 h-12 rounded-full overflow-hidden mr-4 border-2 border-purple-500">
+                                <Image
+                                  src={testimonial.avatar}
+                                  alt={testimonial.author}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                                  {testimonial.author}
+                                </h4>
+                                <p className="text-gray-400 text-sm">
+                                  {testimonial.role}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+        
+                          {/* Subtle border glow effect on hover */}
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            whileHover={{ opacity: 1 }}
+                            className="absolute inset-0 border border-purple-500/30 rounded-2xl"
+                          ></motion.div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+        
+                {/* FAQ Section with premium accordions */}
+                <section id="faq" className="py-24 bg-black will-change-transform">
+                  <div className="container mx-auto px-4">
                     <motion.div
-                      initial={{ rotateY: -10 }}
-                      whileHover={{ rotateY: 10 }}
-                      transition={{ type: "spring", stiffness: 50 }}
-                      className="relative w-64 h-80 md:w-80 md:h-96"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="text-center mb-16"
                     >
-                      {/* Main phone with app icon */}
-                      <div className="absolute inset-0 rounded-3xl overflow-hidden border-8 border-gray-900 shadow-2xl transform rotate-3">
-                        <div className="w-full h-full bg-gradient-to-br from-purple-900 to-black flex items-center justify-center">
-                          <div className="relative w-32 h-32">
+                      <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
+                        <span className="text-purple-300 font-medium text-sm">
+                          ✨ QUESTIONS ANSWERED
+                        </span>
+                      </span>
+                      <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                        Frequently Asked{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
+                          Questions
+                        </span>
+                      </h2>
+                      <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                        Everything you need to know about Ginie AI and its features.
+                      </p>
+                    </motion.div>
+        
+                    {/* Enhanced FAQ accordions */}
+                    <div className="max-w-3xl mx-auto">
+                      {faqs.map((faq, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: index * 0.1 }}
+                          className="mb-6"
+                        >
+                          <details className="group">
+                            <summary className="flex items-center justify-between cursor-pointer bg-gray-900 hover:bg-gray-800 p-6 rounded-xl border border-purple-900/20 transition-colors duration-300">
+                              <h3 className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-400">
+                                {faq.question}
+                              </h3>
+                              <div className="ml-4 flex-shrink-0 bg-white/10 p-2 rounded-full group-open:bg-purple-600 transition-colors duration-300">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-5 w-5 transform group-open:rotate-180 transition-transform duration-300"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 9l-7 7-7-7"
+                                  />
+                                </svg>
+                              </div>
+                            </summary>
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              className="px-6 pt-0 overflow-hidden bg-gradient-to-br from-gray-900 to-gray-900/50 rounded-b-xl border-x border-b border-purple-900/20"
+                            >
+                              <p className="py-6 text-gray-300">{faq.answer}</p>
+                            </motion.div>
+                          </details>
+                        </motion.div>
+                      ))}
+                    </div>
+        
+                    {/* Still have questions section */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.4 }}
+                      className="mt-16 text-center"
+                    >
+                      <p className="text-gray-400">Still have questions?</p>
+                      <a
+                        href="https://x.com/PixelNiladri"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center mt-3 text-purple-400 hover:text-purple-300 transition-colors duration-300"
+                      >
+                        Contact our support team
+                        <FaChevronRight className="ml-2 text-xs" />
+                      </a>
+                    </motion.div>
+                  </div>
+                </section>
+        
+                {/* Download Section with advanced design elements */}
+                <section
+                  id="download"
+                  ref={downloadRef}
+                  className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-950 to-black will-change-transform"
+                >
+                  {/* Animated background elements */}
+                  <div className="absolute inset-0">
+                    <motion.div
+                      animate={{
+                        rotate: [0, 360],
+                        scale: [1, 1.1, 1],
+                        opacity: [0.3, 0.4, 0.3],
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 30,
+                        ease: "linear",
+                      }}
+                      className="absolute -right-1/4 -top-1/4 w-1/2 h-1/2 bg-purple-700/10 rounded-full blur-3xl particle-animation"
+                    ></motion.div>
+                    <motion.div
+                      animate={{
+                        rotate: [0, -360],
+                        scale: [1, 1.2, 1],
+                        opacity: [0.2, 0.3, 0.2],
+                      }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 40,
+                        ease: "linear",
+                      }}
+                      className="absolute -left-1/4 -bottom-1/4 w-1/2 h-1/2 bg-pink-700/10 rounded-full blur-3xl particle-animation"
+                    ></motion.div>
+                  </div>
+        
+                  <div className="container mx-auto px-4 relative z-10">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="text-center mb-16"
+                    >
+                      <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
+                        <span className="text-purple-300 font-medium text-sm">
+                          ✨ GET STARTED
+                        </span>
+                      </span>
+                      <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+                        Download{" "}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">
+                          Ginie AI
+                        </span>{" "}
+                        Now
+                      </h2>
+                      <p className="text-gray-400 max-w-2xl mx-auto text-lg mb-8">
+                        Join the movie discovery revolution. Experience the power of
+                        AI-driven recommendations and mood-based content suggestions.
+                      </p>
+                    </motion.div>
+        
+                    {/* Enhanced download card with 3D elements and device mockups */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      className="bg-gradient-to-br from-gray-900 to-black p-12 rounded-3xl max-w-5xl mx-auto border border-purple-800/30 shadow-2xl shadow-purple-500/10 relative overflow-hidden"
+                    >
+                      <div className="flex flex-col lg:flex-row items-center">
+                        <div className="lg:w-1/2 mb-10 lg:mb-0">
+                          <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                            Discover your next favorite movie with AI
+                          </h3>
+                          <ul className="space-y-4 mb-8">
+                            {[
+                              {
+                                icon: <GiBrain className="text-purple-500" />,
+                                text: "AI-powered personalized movie recommendations",
+                              },
+                              {
+                                icon: <MdOutlineMood className="text-pink-500" />,
+                                text: "Mood-based content suggestions",
+                              },
+                              {
+                                icon: <BiSearchAlt className="text-blue-500" />,
+                                text: "Advanced natural language search",
+                              },
+                              {
+                                icon: <BsShieldCheck className="text-green-500" />,
+                                text: "Secure and private experience",
+                              },
+                            ].map((item, index) => (
+                              <li key={index} className="flex items-center">
+                                <span className="mr-3 p-2 bg-white/10 rounded-full">
+                                  {item.icon}
+                                </span>
+                                <span className="text-gray-300">{item.text}</span>
+                              </li>
+                            ))}
+                          </ul>
+        
+                          <motion.button
+                            onClick={handleDownload}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all"
+                          >
+                            <FaDownload className="mr-2" />
+                            Download Now
+                          </motion.button>
+        
+                          <p className="mt-6 text-gray-500 text-sm">
+                            Available for Android, iOS, and Web Browsers
+                          </p>
+                        </div>
+        
+                        <div className="lg:w-1/2 flex justify-center">
+                          {/* 3D mockup of device with app logo */}
+                          <div className="relative perspective-1000">
+                            <motion.div
+                              initial={{ rotateY: -10 }}
+                              whileHover={{ rotateY: 10 }}
+                              transition={{ type: "spring", stiffness: 50 }}
+                              className="relative w-64 h-80 md:w-80 md:h-96"
+                            >
+                              {/* Main phone with app icon */}
+                              <div className="absolute inset-0 rounded-3xl overflow-hidden border-8 border-gray-900 shadow-2xl transform rotate-3">
+                                <div className="w-full h-full bg-gradient-to-br from-purple-900 to-black flex items-center justify-center">
+                                  <div className="relative w-32 h-32">
+                                    <Image
+                                      src="/assets/logo3.png"
+                                      alt="Ginie AI Logo"
+                                      fill
+                                      loading="lazy"
+                                      unoptimized={true}
+                                      sizes="128px"
+                                      style={{ objectFit: "cover" }}
+                                    />
+                                    <motion.div
+                                      animate={{
+                                        opacity: [0.5, 0.8, 0.5],
+                                        scale: [0.98, 1, 0.98],
+                                      }}
+                                      transition={{
+                                        repeat: Infinity,
+                                        duration: 3,
+                                        ease: "easeInOut",
+                                      }}
+                                      className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 rounded-full"
+                                    ></motion.div>
+                                  </div>
+                                </div>
+                              </div>
+        
+                              {/* Shadow */}
+                              <div className="absolute -bottom-8 inset-x-0 h-2 bg-black/50 blur-md rounded-full transform scale-x-90"></div>
+                            </motion.div>
+                          </div>
+                        </div>
+                      </div>
+        
+                      {/* Thank you message with animation */}
+                      <AnimatePresence>
+                        {showThankYou && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="absolute bottom-0 inset-x-0 p-6 rounded-b-3xl bg-gradient-to-r from-green-900/70 to-emerald-900/70 backdrop-blur-md border-t border-green-500/20"
+                          >
+                            <div className="flex items-center justify-center">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 mr-2 text-green-500"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                              Thank you for downloading Ginie AI! Redirecting to Google
+                              Drive...
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+        
+                    {/* Device compatibility icons */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      whileInView={{ opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.4 }}
+                      className="flex flex-wrap justify-center items-center gap-8 mt-16"
+                    >
+                      {[
+                        {
+                          name: "Android",
+                          icon: "M12 5.69l5 2.88v8.43H7V8.57l5-2.88m0-2.69l-6 3.5V18h12V6.5l-6-3.5z",
+                        },
+                        {
+                          name: "iOS",
+                          icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z",
+                        },
+                        {
+                          name: "Web",
+                          icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm7.36 6.58A8.82 8.82 0 0 1 20 12c0 1.3-.28 2.54-.79 3.66a5 5 0 0 0-3.85-2.07v-.02A2.75 2.75 0 0 1 12.6 11a2.75 2.75 0 0 1-2.75 2.75 2.75 2.75 0 0 1-2.75-2.75 2.75 2.75 0 0 1 2.76-2.75c.91 0 1.62.45 2.12 1.09A6 6 0 0 1 4.84 6.84 8.05 8.05 0 0 1 12 4c2.76 0 5.26 1.4 6.93 3.59z",
+                        },
+                      ].map((device, index) => (
+                        <div key={index} className="flex flex-col items-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            className="w-8 h-8 text-gray-400"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d={device.icon}
+                            />
+                          </svg>
+                          <span className="text-sm text-gray-400 mt-2">
+                            {device.name}
+                          </span>
+                        </div>
+                      ))}
+                    </motion.div>
+                  </div>
+                </section>
+        
+                {/* Footer with improved styling */}
+                <footer className="bg-gray-950 border-t border-gray-900 py-16">
+                  <div className="container mx-auto px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+                      {/* Logo and description */}
+                      <div className="col-span-1 md:col-span-2">
+                        <div className="flex items-center mb-6">
+                          <motion.div
+                            whileHover={{ rotate: 10 }}
+                            className="w-10 h-10 relative mr-3"
+                          >
                             <Image
                               src="/assets/logo3.png"
                               alt="Ginie AI Logo"
                               fill
                               loading="lazy"
                               unoptimized={true}
-                              sizes="128px"
+                              sizes="40px"
                               style={{ objectFit: "cover" }}
                             />
-                            <motion.div
-                              animate={{
-                                opacity: [0.5, 0.8, 0.5],
-                                scale: [0.98, 1, 0.98],
-                              }}
-                              transition={{
-                                repeat: Infinity,
-                                duration: 3,
-                                ease: "easeInOut",
-                              }}
-                              className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 rounded-full"
-                            ></motion.div>
-                          </div>
+                          </motion.div>
+                          <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                            Ginie AI
+                          </h2>
+                        </div>
+                        <p className="text-gray-400 mb-6 max-w-md">
+                          Your AI-powered movie discovery companion. Find your next
+                          favorite movie through personalized recommendations,
+                          mood-based suggestions, and advanced search.
+                        </p>
+                        <div className="flex space-x-4">
+                          <a
+                            href="https://x.com/PixelNiladri"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-white/5 hover:bg-blue-600/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-blue-600/30"
+                          >
+                            <FaTwitter className="text-blue-400" />
+                          </a>
+                          <a
+                            href="https://github.com/NiladriHazra"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-white/5 hover:bg-gray-700/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-gray-600/30"
+                          >
+                            <FaGithub className="text-white" />
+                          </a>
                         </div>
                       </div>
-
-                      {/* Shadow */}
-                      <div className="absolute -bottom-8 inset-x-0 h-2 bg-black/50 blur-md rounded-full transform scale-x-90"></div>
-                    </motion.div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Thank you message with animation */}
-              <AnimatePresence>
-                {showThankYou && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute bottom-0 inset-x-0 p-6 rounded-b-3xl bg-gradient-to-r from-green-900/70 to-emerald-900/70 backdrop-blur-md border-t border-green-500/20"
-                  >
-                    <div className="flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 mr-2 text-green-500"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Thank you for downloading Ginie AI! Redirecting to Google
-                      Drive...
+        
+                      {/* Quick links */}
+                      <div>
+                        <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
+                        <ul className="space-y-4">
+                          <li>
+                            <a
+                              href="#features"
+                              className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
+                            >
+                              Features
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="#ai"
+                              className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
+                            >
+                              AI Assistant
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="#screenshots"
+                              className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
+                            >
+                              Screenshots
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="#testimonials"
+                              className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
+                            >
+                              Testimonials
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="#faq"
+                              className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
+                            >
+                              FAQ
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+        
+                      {/* Contact */}
+                      <div>
+                        <h3 className="text-lg font-semibold mb-6">Contact</h3>
+                        <ul className="space-y-4">
+                          <li className="flex items-start">
+                            <a
+                              href="https://x.com/PixelNiladri"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 transition-colors duration-300 flex items-center"
+                            >
+                              <FaTwitter className="mr-2" />
+                              @PixelNiladri
+                            </a>
+                          </li>
+                          <li>
+                            <a
+                              href="https://github.com/NiladriHazra"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-gray-300 transition-colors duration-300 flex items-center"
+                            >
+                              <FaGithub className="mr-2" />
+                              GitHub
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
+        
+                    <div className="mt-16 pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center">
+                      <p className="text-gray-500 text-sm">
+                        &copy; {new Date().getFullYear()} Ginie AI. All rights reserved.
+                      </p>
+                      <p className="text-gray-500 text-sm mt-4 md:mt-0">
+                        Designed with ❤️ by Niladri Hazra
+                      </p>
+                    </div>
+                  </div>
+                </footer>
+                {/* Download Form Modal */}
 
-            {/* Device compatibility icons */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-wrap justify-center items-center gap-8 mt-16"
-            >
-              {[
-                {
-                  name: "Android",
-                  icon: "M12 5.69l5 2.88v8.43H7V8.57l5-2.88m0-2.69l-6 3.5V18h12V6.5l-6-3.5z",
-                },
-                {
-                  name: "iOS",
-                  icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z",
-                },
-                {
-                  name: "Web",
-                  icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm7.36 6.58A8.82 8.82 0 0 1 20 12c0 1.3-.28 2.54-.79 3.66a5 5 0 0 0-3.85-2.07v-.02A2.75 2.75 0 0 1 12.6 11a2.75 2.75 0 0 1-2.75 2.75 2.75 2.75 0 0 1-2.75-2.75 2.75 2.75 0 0 1 2.76-2.75c.91 0 1.62.45 2.12 1.09A6 6 0 0 1 4.84 6.84 8.05 8.05 0 0 1 12 4c2.76 0 5.26 1.4 6.93 3.59z",
-                },
-              ].map((device, index) => (
-                <div key={index} className="flex flex-col items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    className="w-8 h-8 text-gray-400"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d={device.icon}
-                    />
-                  </svg>
-                  <span className="text-sm text-gray-400 mt-2">
-                    {device.name}
-                  </span>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Footer with improved styling */}
-        <footer className="bg-gray-950 border-t border-gray-900 py-16">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-              {/* Logo and description */}
-              <div className="col-span-1 md:col-span-2">
-                <div className="flex items-center mb-6">
-                  <motion.div
-                    whileHover={{ rotate: 10 }}
-                    className="w-10 h-10 relative mr-3"
-                  >
-                    <Image
-                      src="/assets/logo3.png"
-                      alt="Ginie AI Logo"
-                      fill
-                      loading="lazy"
-                      unoptimized={true}
-                      sizes="40px"
-                      style={{ objectFit: "cover" }}
-                    />
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                    Ginie AI
-                  </h2>
-                </div>
-                <p className="text-gray-400 mb-6 max-w-md">
-                  Your AI-powered movie discovery companion. Find your next
-                  favorite movie through personalized recommendations,
-                  mood-based suggestions, and advanced search.
-                </p>
-                <div className="flex space-x-4">
-                  <a
-                    href="https://x.com/PixelNiladri"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white/5 hover:bg-blue-600/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-blue-600/30"
-                  >
-                    <FaTwitter className="text-blue-400" />
-                  </a>
-                  <a
-                    href="https://github.com/NiladriHazra"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-white/5 hover:bg-gray-700/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-gray-600/30"
-                  >
-                    <FaGithub className="text-white" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Quick links */}
-              <div>
-                <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
-                <ul className="space-y-4">
-                  <li>
-                    <a
-                      href="#features"
-                      className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
-                    >
-                      Features
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#ai"
-                      className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
-                    >
-                      AI Assistant
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#screenshots"
-                      className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
-                    >
-                      Screenshots
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#testimonials"
-                      className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
-                    >
-                      Testimonials
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#faq"
-                      className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
-                    >
-                      FAQ
-                    </a>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Contact */}
-              <div>
-                <h3 className="text-lg font-semibold mb-6">Contact</h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start">
-                    <a
-                      href="https://x.com/PixelNiladri"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 hover:text-blue-300 transition-colors duration-300 flex items-center"
-                    >
-                      <FaTwitter className="mr-2" />
-                      @PixelNiladri
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="https://github.com/NiladriHazra"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-gray-400 hover:text-gray-300 transition-colors duration-300 flex items-center"
-                    >
-                      <FaGithub className="mr-2" />
-                      GitHub
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-16 pt-8 border-t border-gray-900 flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-500 text-sm">
-                &copy; {new Date().getFullYear()} Ginie AI. All rights reserved.
-              </p>
-              <p className="text-gray-500 text-sm mt-4 md:mt-0">
-                Designed with ❤️ by Niladri Hazra
-              </p>
-            </div>
-          </div>
-        </footer>
         {/* Download Form Modal */}
         <AnimatePresence>
-  {showDownloadModal && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
-      onClick={() => setShowDownloadModal(false)}
-      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: -50 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-500/30 shadow-2xl max-w-md w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-          Download Ginie AI
-        </h3>
-
-        <p className="text-gray-300 mb-6">
-          Please provide your information to download the app. We'll
-          keep you updated with new features and improvements.
-        </p>
-
-        <form onSubmit={handleDownloadSubmit}>
-          {formError && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded-lg text-red-200 text-sm">
-              {formError}
-            </div>
-          )}
-
-          <div className="mb-4">
-            <label
-              htmlFor="name"
-              className="block text-gray-300 mb-2 text-sm"
-            >
-              Your Name*
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={downloadFormData.name}
-              onChange={(e) =>
-                setDownloadFormData({
-                  ...downloadFormData,
-                  name: e.target.value,
-                })
-              }
-              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
-              placeholder="John Doe"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-gray-300 mb-2 text-sm"
-            >
-              Email Address*
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={downloadFormData.email}
-              onChange={(e) =>
-                setDownloadFormData({
-                  ...downloadFormData,
-                  email: e.target.value,
-                })
-              }
-              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
-              placeholder="john@example.com"
-              required
-            />
-          </div>
-
-          <div className="mb-6">
-            <label
-              htmlFor="phone"
-              className="block text-gray-300 mb-2 text-sm"
-            >
-              Phone Number (Optional)
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              value={downloadFormData.phone}
-              onChange={(e) =>
-                setDownloadFormData({
-                  ...downloadFormData,
-                  phone: e.target.value,
-                })
-              }
-              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
-              placeholder="+1 (123) 456-7890"
-            />
-          </div>
-
-          <div className="flex space-x-4">
-            <button
-              type="button"
+          {showDownloadModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
               onClick={() => setShowDownloadModal(false)}
-              className="flex-1 py-3 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors"
+              style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
             >
-              Cancel
-            </button>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: -50 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-500/30 shadow-2xl max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                  Download Ginie AI
+                </h3>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Processing...
-                </span>
-              ) : (
-                <span className="flex items-center">
-                  <FaDownload className="mr-2" />
-                  Download Now
-                </span>
-              )}
-            </button>
-          </div>
+                <p className="text-gray-300 mb-6">
+                  Please provide your information to download the app. We'll
+                  keep you updated with new features and improvements.
+                </p>
 
-          <p className="mt-6 text-xs text-gray-400 text-center">
-            By downloading, you agree to our Terms of Service and
-            Privacy Policy.
-          </p>
-        </form>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
-      </div>
+                <form onSubmit={handleDownloadSubmit}>
+                  {formError && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded-lg text-red-200 text-sm">
+                      {formError}
+                    </div>
+                  )}
 
-      {/* Custom CSS for navigation links with underline effect */}
-      <style jsx>{`
+                  <div className="mb-4">
+                    <label
+                      htmlFor="name"
+                      className="block text-gray-300 mb-2 text-sm"
+                    >
+                      Your Name*
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={downloadFormData.name}
+                      onChange={(e) =>
+                        setDownloadFormData({
+                          ...downloadFormData,
+                          name: e.target.value,
+                        })
+                      }
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label
+                      htmlFor="email"
+                      className="block text-gray-300 mb-2 text-sm"
+                    >
+                      Email Address*
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={downloadFormData.email}
+                      onChange={(e) =>
+                        setDownloadFormData({
+                          ...downloadFormData,
+                          email: e.target.value,
+                        })
+                      }
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
+                      placeholder="john@example.com"
+                      required
+                    />
+                  </div>
+
+                  <div className="mb-6">
+                    <label
+                      htmlFor="phone"
+                      className="block text-gray-300 mb-2 text-sm"
+                    >
+                      Phone Number (Optional)
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      value={downloadFormData.phone}
+                      onChange={(e) =>
+                        setDownloadFormData({
+                          ...downloadFormData,
+                          phone: e.target.value,
+                        })
+                      }
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
+                      placeholder="+1 (123) 456-7890"
+                    />
+                  </div>
+
+                  <div className="flex space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowDownloadModal(false)}
+                      className="flex-1 py-3 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <FaDownload className="mr-2" />
+                          Download Now
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
+                  <p className="mt-6 text-xs text-gray-400 text-center">
+                    By downloading, you agree to our Terms of Service and
+                    Privacy Policy.
+                  </p>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Custom CSS for navigation links with underline effect */}
+        <style jsx>{`
         .nav-link::after {
           content: "";
           position: absolute;
@@ -3004,6 +3034,7 @@ useEffect(() => {
           }
         }
       `}</style>
+      </div>
     </>
   );
 };
