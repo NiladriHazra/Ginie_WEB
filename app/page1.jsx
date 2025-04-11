@@ -9,7 +9,6 @@ import {
   useScroll,
   useTransform,
   useInView,
-  useReducedMotion,
 } from "framer-motion";
 import {
   FaDownload,
@@ -45,13 +44,22 @@ const Page = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("ai"); // Changed from "all" to "ai"
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedMood, setSelectedMood] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
   
-  // Check if reduced motion is preferred for better performance
-  const prefersReducedMotion = useReducedMotion();
+  // For phone images carousel
+  const [phoneImages] = useState([
+    "/assets/images/genieai.jpg",
+    "/assets/images/foryou.jpg", 
+    "/assets/images/genre.jpg", 
+    "/assets/images/aisearch.jpg",
+    "/assets/images/aipick.jpg"
+  ]);
+  const [currentPhoneImage, setCurrentPhoneImage] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const phoneImageRef = useRef(null);
 
   // Refs for scroll animations
   const heroRef = useRef(null);
@@ -216,30 +224,30 @@ const Page = () => {
     {
       content:
         "Ginie AI has completely transformed how I discover movies. The mood-based recommendations are spot-on and the AI assistant feels like having a film expert in my pocket. I've discovered s[...]",
-      author: "Sarah K.",
+      author: "Eesha S.",
       role: "Film Enthusiast",
-      avatar: "https://randomuser.me/api/portraits/women/41.jpg",
+      avatar: "https://randomuser.me/api/portraits/women/99.jpg",
     },
     {
       content:
         "As someone who travels frequently, finding good content quickly is essential. Ginie's AI understands my taste perfectly and the clean interface makes browsing effortless. The personalize[...]",
       author: "Michael T.",
-      role: "Business Traveler",
+      role: "Content Creator",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     },
     {
       content:
         "I've tried many movie apps, but Ginie AI is in a league of its own. The AI chat feature is brilliant - I can describe vague movie plots and it figures out exactly what I'm looking for. M[...]",
-      author: "Raj M.",
-      role: "Tech Blogger",
+      author: "Eidena R.",
+      role: "Ex Google Engineer",
       avatar: "https://randomuser.me/api/portraits/men/68.jpg",
     },
     {
       content:
         "The mood-based recommendation system is genius! On days when I'm feeling down, Ginie suggests uplifting movies that genuinely help improve my mood. It's like the app understands not just[...]",
-      author: "Elena D.",
+      author: "Rupam D.",
       role: "Psychologist & Film Lover",
-      avatar: "https://randomuser.me/api/portraits/women/33.jpg",
+      avatar: "https://randomuser.me/api/portraits/men/50.jpg",
     },
   ];
 
@@ -248,36 +256,52 @@ const Page = () => {
     {
       question: "What makes Ginie AI different from other movie apps?",
       answer:
-        "Ginie AI combines advanced AI recommendations with emotional intelligence. Unlike other apps that just suggest content based on genre, Ginie offers mood-based recommendations, has a conv[...]",
+        "Ginie AI combines advanced AI recommendations with emotional intelligence. Unlike other apps that just suggest content based on genre, Ginie offers mood-based recommendations, has a conv[...]"
     },
     {
       question: "How does the mood-based recommendation work?",
       answer:
-        "Our mood-based recommendation system uses a combination of content analysis and emotional psychology. When you select a mood (like happy, sad, excited, or relaxed), our AI analyzes thous[...]",
+        "Our mood-based recommendation system uses a combination of content analysis and emotional psychology. When you select a mood (like happy, sad, excited, or relaxed), our AI analyzes thous[...]"
     },
     {
       question: "Can I use Ginie AI on multiple devices?",
       answer:
-        "Yes! Ginie AI is available on Android, iOS, and web browsers. Your account syncs seamlessly across all platforms, so your watchlist, preferences, and recommendations are always up to dat[...]",
+        "Yes! Ginie AI is available on Android, iOS, and web browsers. Your account syncs seamlessly across all platforms, so your watchlist, preferences, and recommendations are always up to dat[...]"
     },
     {
       question: "How often is the content library updated?",
       answer:
-        "We add new movies and shows every day. Our system automatically incorporates new releases as they become available on major platforms, and our content team curates special collections re[...]",
+        "We add new movies and shows every day. Our system automatically incorporates new releases as they become available on major platforms, and our content team curates special collections re[...]"
     },
     {
       question: "Is my viewing data secure with Ginie AI?",
       answer:
-        "Absolutely! We take data privacy very seriously. All user data is encrypted and stored securely. Your viewing habits and preferences are only used to improve your personal recommendation[...]",
+        "Absolutely! We take data privacy very seriously. All user data is encrypted and stored securely. Your viewing habits and preferences are only used to improve your personal recommendation[...]"
     },
   ];
 
+  // Handle touch events for phone carousel
+  const handleTouchStart = (e) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      // Swiped left
+      setCurrentPhoneImage((prev) => (prev + 1) % phoneImages.length);
+    }
+
+    if (touchEnd - touchStart > 75) {
+      // Swiped right
+      setCurrentPhoneImage((prev) => (prev - 1 + phoneImages.length) % phoneImages.length);
+    }
+  };
+
   useEffect(() => {
-    // Function to check if the device is mobile
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
     // Reduced loading time for better UX
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -287,19 +311,46 @@ const Page = () => {
     const slideInterval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % screenshots.length);
     }, 5000);
-    
-    // Check device type on mount
-    checkIfMobile();
-    
-    // Add resize listener
-    window.addEventListener('resize', checkIfMobile);
+
+    // Auto-slide for phone images carousel
+    const phoneSlideInterval = setInterval(() => {
+      setCurrentPhoneImage((prev) => (prev + 1) % phoneImages.length);
+    }, 3000);
+
+    // Optimize mobile performance by removing some animations
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        // Optimize for mobile by reducing particle animations
+        const particles = document.querySelectorAll('.particle-animation');
+        particles.forEach(particle => {
+          particle.style.display = 'none';
+        });
+      }
+    };
+
+    // Apply optimizations on load and resize
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Apply passive event listeners to improve scroll performance
+    const touchOptions = { passive: true };
+    const touchElements = document.querySelectorAll('.touch-handler');
+    touchElements.forEach(el => {
+      el.addEventListener('touchstart', handleTouchStart, touchOptions);
+      el.addEventListener('touchmove', handleTouchMove, touchOptions);
+    });
 
     return () => {
       clearTimeout(timer);
       clearInterval(slideInterval);
-      window.removeEventListener('resize', checkIfMobile);
+      clearInterval(phoneSlideInterval);
+      window.removeEventListener('resize', handleResize);
+      touchElements.forEach(el => {
+        el.removeEventListener('touchstart', handleTouchStart);
+        el.removeEventListener('touchmove', handleTouchMove);
+      });
     };
-  }, []);
+  }, [phoneImages.length]);
 
   // Handle download click with Google Drive link
   const handleDownload = () => {
@@ -405,144 +456,106 @@ const Page = () => {
           content="Discover your next favorite movie with Ginie AI - the ultimate movie discovery app with AI-powered recommendations, mood-based suggestions, and personalized content."
         />
         <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
       </Head>
 
       <div className="relative overflow-x-hidden bg-black text-white">
-        {/* Sticky navbar with glass effect - FIXED FOR TABLET PORTRAIT */}
+        {/* Sticky navbar with glass effect */}
         <motion.nav
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
           className="sticky top-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10"
         >
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <motion.div
-                  whileHover={{ rotate: 15, scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                  className="mr-3 w-10 h-10 relative"
-                >
-                  <Image
-                    src="/assets/logo3.png"
-                    alt="Ginie AI Logo"
-                    fill
-                    loading="lazy"
-                    unoptimized={true}
-                    sizes="40px"
-                    style={{ objectFit: "cover" }}
-                  />
-                </motion.div>
-                <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
-                  Ginie AI
-                </h1>
-              </div>
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div className="flex items-center">
+              <motion.div
+                whileHover={{ rotate: 15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="mr-3 w-10 h-10 relative"
+              >
+                <Image
+                  src="/assets/logo3.png"
+                  alt="Ginie AI Logo"
+                  fill
+                  loading="lazy"
+                  unoptimized={true}
+                  sizes="40px"
+                  style={{ objectFit: "cover" }}
+                />
+              </motion.div>
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                Ginie AI
+              </h1>
+            </div>
 
-              {/* Desktop navigation */}
-              <div className="hidden lg:flex space-x-8 items-center">
-                <a
-                  href="#features"
-                  className="nav-link relative transition-colors duration-300"
-                >
-                  Features
-                </a>
-                <a
-                  href="#ai"
-                  className="nav-link relative transition-colors duration-300"
-                >
-                  AI Assistant
-                </a>
-                <a
-                  href="#screenshots"
-                  className="nav-link relative transition-colors duration-300"
-                >
-                  Screenshots
-                </a>
-                <a
-                  href="#testimonials"
-                  className="nav-link relative transition-colors duration-300"
-                >
-                  Testimonials
-                </a>
-                <a
-                  href="#faq"
-                  className="nav-link relative transition-colors duration-300"
-                >
-                  FAQ
-                </a>
-                <a
-                  href="https://x.com/PixelNiladri"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center text-blue-400 hover:text-blue-300 transition-colors duration-300"
-                >
-                  <FaTwitter className="mr-2" />
-                  <span>@PixelNiladri</span>
-                </a>
-                <button
-                  onClick={handleDownload}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
-                >
-                  <FaDownload className="mr-2" />
-                  Download
-                </button>
-              </div>
-              
-              {/* Tablet navigation - NEW SECTION FOR TABLET */}
-              <div className="hidden md:flex lg:hidden space-x-4 items-center">
-                <div className="flex space-x-1">
-                  <a
-                    href="#features"
-                    className="nav-link relative transition-colors duration-300 px-2 py-1 text-sm"
-                  >
-                    Features
-                  </a>
-                  <a
-                    href="#ai"
-                    className="nav-link relative transition-colors duration-300 px-2 py-1 text-sm"
-                  >
-                    AI
-                  </a>
-                  <a
-                    href="#screenshots"
-                    className="nav-link relative transition-colors duration-300 px-2 py-1 text-sm"
-                  >
-                    App
-                  </a>
-                  <a
-                    href="#faq"
-                    className="nav-link relative transition-colors duration-300 px-2 py-1 text-sm"
-                  >
-                    FAQ
-                  </a>
-                </div>
-                <button
-                  onClick={handleDownload}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-1.5 px-4 rounded-full shadow-lg flex items-center justify-center text-sm"
-                >
-                  <FaDownload className="mr-1" size={12} />
-                  Download
-                </button>
-              </div>
+            {/* Desktop navigation */}
+            <div className="hidden md:flex space-x-8 items-center">
+              <a
+                href="#features"
+                className="nav-link relative transition-colors duration-300"
+              >
+                Features
+              </a>
+              <a
+                href="#ai"
+                className="nav-link relative transition-colors duration-300"
+              >
+                AI Assistant
+              </a>
+              <a
+                href="#screenshots"
+                className="nav-link relative transition-colors duration-300"
+              >
+                Screenshots
+              </a>
+              <a
+                href="#testimonials"
+                className="nav-link relative transition-colors duration-300"
+              >
+                Testimonials
+              </a>
+              <a
+                href="#faq"
+                className="nav-link relative transition-colors duration-300"
+              >
+                FAQ
+              </a>
+              <a
+                href="https://x.com/PixelNiladri"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center text-blue-400 hover:text-blue-300 transition-colors duration-300"
+              >
+                <FaTwitter className="mr-2" />
+                <span>@PixelNiladri</span>
+              </a>
+              <button
+                onClick={handleDownload}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+              >
+                <FaDownload className="mr-2" />
+                Download
+              </button>
+            </div>
 
-              {/* Mobile menu button */}
-              <div className="md:hidden flex items-center space-x-4">
-                <button
-                  onClick={handleDownload}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center cursor-pointer"
-                >
-                  <FaDownload className="mr-2" size={14} />
-                  <span className="text-sm">Download</span>
-                </button>
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10"
-                >
-                  <div className="w-6 h-0.5 bg-white mb-1.5"></div>
-                  <div className="w-6 h-0.5 bg-white mb-1.5"></div>
-                  <div className="w-6 h-0.5 bg-white"></div>
-                </button>
-              </div>
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center space-x-4">
+              <button
+                onClick={handleDownload}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center cursor-pointer transform transition-all duration-200 hover:scale-105 shadow-lg"
+              >
+                <FaDownload className="mr-2" size={14} />
+                <span className="text-sm">Download</span>
+              </button>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10"
+              >
+                <div className="w-6 h-0.5 bg-white mb-1.5"></div>
+                <div className="w-6 h-0.5 bg-white mb-1.5"></div>
+                <div className="w-6 h-0.5 bg-white"></div>
+              </button>
             </div>
           </div>
 
@@ -616,12 +629,12 @@ const Page = () => {
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-950/20 to-black"></div>
 
-            {/* Animated particles - OPTIMIZED FOR MOBILE */}
+            {/* Animated particles - optimized for performance */}
             <div className="absolute inset-0 overflow-hidden">
-              {(!isMobile || !prefersReducedMotion) && [...Array(isMobile ? 10 : 20)].map((_, i) => (
+              {[...Array(10)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute rounded-full bg-purple-500/20 blur-3xl"
+                  className="absolute rounded-full bg-purple-500/20 blur-3xl particle-animation"
                   initial={{
                     x: Math.random() * 100 - 50 + "%",
                     y: Math.random() * 100 - 50 + "%",
@@ -707,7 +720,7 @@ const Page = () => {
                 >
                   <button
                     onClick={handleDownload}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
                   >
                     <FaDownload className="mr-2" />
                     Download Now
@@ -753,167 +766,202 @@ const Page = () => {
                 </motion.div>
               </motion.div>
 
-              {/* 3D Device mockups with advanced animations - OPTIMIZED FOR MOBILE */}
+              {/* 3D Device mockups with advanced animations */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                style={{ y: !isMobile ? heroY : 0 }}
+                style={{ y: heroY }}
                 className="lg:w-1/2 flex justify-center relative"
               >
-                {/* Main phone mockup */}
+                {/* Main phone mockup with image carousel */}
                 <motion.div
                   className="relative w-72 h-[36rem] md:w-80 md:h-[40rem]"
                   whileHover={{ rotateY: 5, rotateX: -5 }}
                   transition={{ type: "spring", stiffness: 100 }}
                 >
                   {/* Phone frame with screen */}
-                  <div className="absolute w-full h-full rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-2xl shadow-purple-500/20">
+                  <div 
+                    className="absolute w-full h-full rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-2xl shadow-purple-500/20 touch-handler"
+                    ref={phoneImageRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10"></div>
-                    <Image
-                      src="/assets/images/genieai.jpg"
-                      alt="Ginie AI App Screenshot"
-                      fill
-                      sizes="(max-width: 768px) 288px, 320px"
-                      priority
-                      style={{ objectFit: "cover" }}
-                    />
+                    
+                    {/* Phone screen images carousel */}
+                    <div className="relative h-full w-full">
+                      <AnimatePresence>
+                        {phoneImages.map((image, index) => (
+                          <motion.div
+                            key={index}
+                            className="absolute inset-0"
+                            initial={{ opacity: 0, x: index > currentPhoneImage ? 300 : -300 }}
+                            animate={{ 
+                              opacity: index === currentPhoneImage ? 1 : 0,
+                              x: index === currentPhoneImage ? 0 : (index > currentPhoneImage ? 300 : -300)
+                            }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            style={{ display: Math.abs(index - currentPhoneImage) <= 1 ? 'block' : 'none' }}
+                          >
+                            <Image
+                              src={image}
+                              alt={`Ginie AI App Screenshot ${index+1}`}
+                              fill
+                              sizes="(max-width: 768px) 288px, 320px"
+                              priority={index === 0}
+                              style={{ objectFit: "cover" }}
+                            />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Phone navigation dots */}
+                    <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center space-x-2">
+                      {phoneImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentPhoneImage(index)}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            currentPhoneImage === index
+                              ? "bg-white scale-125"
+                              : "bg-white/50"
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
 
                     {/* Phone notch */}
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-7 bg-black rounded-b-xl z-20"></div>
 
                     {/* Screen reflection overlay */}
-                    {!isMobile && (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: [0, 0.1, 0] }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 5,
-                          ease: "easeInOut",
-                        }}
-                        className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent"
-                      ></motion.div>
-                    )}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 0.1, 0] }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 5,
+                        ease: "easeInOut",
+                      }}
+                      className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent"
+                    ></motion.div>
                   </div>
 
-                  {/* Decorative elements floating around the phone - OPTIMIZED FOR MOBILE */}
-                  {!isMobile && (
-                    <>
-                      <motion.div
-                        initial={{ x: -30, y: -20 }}
-                        animate={{
-                          x: [-30, -45, -30],
-                          y: [-20, -35, -20],
-                          rotate: [0, 5, 0],
-                        }}
-                        transition={{
-                          duration: 4,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        className="absolute -left-16 top-20 bg-gradient-to-br from-purple-500/90 to-pink-500/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-purple-500/20"
-                      >
-                        <BiMoviePlay className="text-white text-2xl" />
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ x: 20, y: 20 }}
-                        animate={{
-                          x: [20, 40, 20],
-                          y: [20, 0, 20],
-                          rotate: [0, -5, 0],
-                        }}
-                        transition={{
-                          duration: 5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 0.5,
-                        }}
-                        className="absolute -right-12 top-1/3 bg-gradient-to-br from-blue-500/90 to-cyan-500/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-blue-500/20"
-                      >
-                        <GiBrain className="text-white text-2xl" />
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ x: -20, y: 20 }}
-                        animate={{
-                          x: [-20, -35, -20],
-                          y: [20, 35, 20],
-                          rotate: [0, -3, 0],
-                        }}
-                        transition={{
-                          duration: 4.5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 1,
-                        }}
-                        className="absolute -left-12 bottom-1/3 bg-gradient-to-br from-amber-500/90 to-yellow-500/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-amber-500/20"
-                      >
-                        <MdOutlineMood className="text-white text-2xl" />
-                      </motion.div>
-
-                      {/* Pill-shaped feature highlight */}
-                      <motion.div
-                        initial={{ x: 40, y: -20, opacity: 0 }}
-                        animate={{
-                          x: [40, 60, 40],
-                          y: [-20, -35, -20],
-                          opacity: 1,
-                        }}
-                        transition={{
-                          delay: 1.2,
-                          duration: 5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        className="absolute -right-24 top-24 bg-white/10 backdrop-blur-md rounded-full py-2 px-4 shadow-lg border border-white/20"
-                      >
-                        <div className="flex items-center">
-                          <BsStarFill className="text-yellow-400 mr-2" />
-                          <span className="text-sm font-medium">Top Rated</span>
-                        </div>
-                      </motion.div>
-
-                      {/* Another pill-shaped feature highlight */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1, y: [0, -10, 0] }}
-                        transition={{ delay: 1.5, duration: 4, repeat: Infinity }}
-                        className="absolute -right-32 bottom-64 bg-white/10 backdrop-blur-md rounded-full py-2 px-4 shadow-lg border border-white/20"
-                      >
-                        <div className="flex items-center">
-                          <AiFillFire className="text-orange-400 mr-2" />
-                          <span className="text-sm font-medium">Trending Now</span>
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </motion.div>
-
-                {/* Secondary smaller device (tablet) positioned in the background */}
-                {!isMobile && (
+                  {/* Decorative elements floating around the phone */}
                   <motion.div
-                    initial={{ opacity: 0, x: 80, y: 60 }}
-                    animate={{ opacity: 0.9, x: [80, 90, 80], y: [60, 50, 60] }}
+                    initial={{ x: -30, y: -20 }}
+                    animate={{
+                      x: [-30, -45, -30],
+                      y: [-20, -35, -20],
+                      rotate: [0, 5, 0],
+                    }}
                     transition={{
-                      delay: 0.7,
-                      duration: 8,
+                      duration: 4,
                       repeat: Infinity,
                       ease: "easeInOut",
                     }}
-                    className="absolute -right-10 bottom-20 w-56 h-72 rounded-2xl overflow-hidden border-8 border-gray-900 shadow-xl transform rotate-6 hidden md:block"
+                    className="absolute -left-16 top-20 bg-gradient-to-br from-purple-500/90 to-pink-500/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-purple-500/20"
                   >
-                    <Image
-                      src="/assets/images/search.jpg"
-                      alt="Ginie AI on tablet"
-                      fill
-                      sizes="224px"
-                      style={{ objectFit: "cover" }}
-                    />
-                    <div className="absolute inset-0 bg-black/20"></div>
+                    <BiMoviePlay className="text-white text-2xl" />
                   </motion.div>
-                )}
+
+                  <motion.div
+                    initial={{ x: 20, y: 20 }}
+                    animate={{
+                      x: [20, 40, 20],
+                      y: [20, 0, 20],
+                      rotate: [0, -5, 0],
+                    }}
+                    transition={{
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.5,
+                    }}
+                    className="absolute -right-12 top-1/3 bg-gradient-to-br from-blue-500/90 to-cyan-500/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-blue-500/20"
+                  >
+                    <GiBrain className="text-white text-2xl" />
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ x: -20, y: 20 }}
+                    animate={{
+                      x: [-20, -35, -20],
+                      y: [20, 35, 20],
+                      rotate: [0, -3, 0],
+                    }}
+                    transition={{
+                      duration: 4.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 1,
+                    }}
+                    className="absolute -left-12 bottom-1/3 bg-gradient-to-br from-amber-500/90 to-yellow-500/90 backdrop-blur-md rounded-2xl p-4 shadow-lg shadow-amber-500/20"
+                  >
+                    <MdOutlineMood className="text-white text-2xl" />
+                  </motion.div>
+
+                  {/* Pill-shaped feature highlight */}
+                  <motion.div
+                    initial={{ x: 40, y: -20, opacity: 0 }}
+                    animate={{
+                      x: [40, 60, 40],
+                      y: [-20, -35, -20],
+                      opacity: 1,
+                    }}
+                    transition={{
+                      delay: 1.2,
+                      duration: 5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="absolute -right-24 top-24 bg-white/10 backdrop-blur-md rounded-full py-2 px-4 shadow-lg border border-white/20"
+                  >
+                    <div className="flex items-center">
+                      <BsStarFill className="text-yellow-400 mr-2" />
+                      <span className="text-sm font-medium">Top Rated</span>
+                    </div>
+                  </motion.div>
+
+                  {/* Another pill-shaped feature highlight */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, y: [0, -10, 0] }}
+                    transition={{ delay: 1.5, duration: 4, repeat: Infinity }}
+                    className="absolute -right-32 bottom-64 bg-white/10 backdrop-blur-md rounded-full py-2 px-4 shadow-lg border border-white/20"
+                  >
+                    <div className="flex items-center">
+                      <AiFillFire className="text-orange-400 mr-2" />
+                      <span className="text-sm font-medium">Trending Now</span>
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Secondary smaller device (tablet) positioned in the background */}
+                <motion.div
+                  initial={{ opacity: 0, x: 80, y: 60 }}
+                  animate={{ opacity: 0.9, x: [80, 90, 80], y: [60, 50, 60] }}
+                  transition={{
+                    delay: 0.7,
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                  className="absolute -right-10 bottom-20 w-56 h-72 rounded-2xl overflow-hidden border-8 border-gray-900 shadow-xl transform rotate-6 hidden md:block"
+                >
+                  <Image
+                    src="/assets/images/search.jpg"
+                    alt="Ginie AI on tablet"
+                    fill
+                    sizes="224px"
+                    style={{ objectFit: "cover" }}
+                  />
+                  <div className="absolute inset-0 bg-black/20"></div>
+                </motion.div>
               </motion.div>
             </div>
           </div>
@@ -927,7 +975,7 @@ const Page = () => {
               className="w-full h-16 text-gray-950"
             >
               <path
-                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,120"
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,120.83,111.44,181.67,85.45c93.34-33.33,185.36-56,290.82-58.83Z"
                 fill="currentColor"
               ></path>
             </svg>
@@ -938,7 +986,7 @@ const Page = () => {
         <section
           id="features"
           ref={featuresRef}
-          className="py-24 bg-gradient-to-b from-gray-950 to-black"
+          className="py-24 bg-gradient-to-b from-gray-950 to-black will-change-transform"
         >
           <div className="container mx-auto px-4">
             <motion.div
@@ -990,7 +1038,7 @@ const Page = () => {
               )}
             </motion.div>
 
-            {/* Enhanced feature cards with animations - OPTIMIZED FOR MOBILE */}
+            {/* Enhanced feature cards with animations */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {features
                 .filter(
@@ -1020,7 +1068,7 @@ const Page = () => {
                     <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-xl"></div>
 
                     {/* Feature icon with improved styling */}
-                    <div className="mb-6 p-4 bg-black/50 rounded-2xl inline-block group-hover:bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-300 relative z-10 border border-white/5 group-hover:border-white/20">
+                    <div className="mb-6 p-4 bg-black/50 rounded-2xl inline-block group-hover:bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-300 relative z-10 border border-gray-700 group-hover:border-transparent">
                       {feature.icon}
                     </div>
 
@@ -1047,7 +1095,7 @@ const Page = () => {
             >
               {[
                 {
-                  value: "10K+",
+                  value: "100K+",
                   label: "Movies & Shows",
                   color: "from-purple-400 to-purple-600",
                 },
@@ -1057,7 +1105,7 @@ const Page = () => {
                   color: "from-pink-400 to-pink-600",
                 },
                 {
-                  value: "6",
+                  value: "8",
                   label: "Mood Categories",
                   color: "from-blue-400 to-blue-600",
                 },
@@ -1092,16 +1140,16 @@ const Page = () => {
         </section>
 
         {/* AI Assistant Section - Enhanced with stunning visuals */}
-        <section id="ai" ref={aiRef} className="py-24 bg-black relative overflow-hidden">
-          {/* Enhanced animated background - OPTIMIZED FOR MOBILE */}
+        <section id="ai" ref={aiRef} className="py-24 bg-black relative overflow-hidden will-change-transform">
+          {/* Enhanced animated background */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute w-full h-full bg-gradient-to-b from-black via-purple-950/10 to-black"></div>
             
-            {/* Animated floating particles - REDUCED FOR MOBILE */}
-            {(!isMobile || !prefersReducedMotion) && [...Array(isMobile ? 10 : 30)].map((_, i) => (
+            {/* Animated floating particles */}
+            {[...Array(15)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute rounded-full bg-white"
+                className="absolute rounded-full bg-white particle-animation"
                 initial={{
                   x: Math.random() * 100 - 50 + '%',
                   y: Math.random() * 100 + '%',
@@ -1125,37 +1173,33 @@ const Page = () => {
               />
             ))}
             
-            {/* Large gradient orbs - OPTIMIZED FOR MOBILE */}
-            {!isMobile && (
-              <>
-                <motion.div 
-                  animate={{ 
-                    rotate: 360,
-                    scale: [1, 1.1, 1],
-                    opacity: [0.2, 0.3, 0.2]
-                  }}
-                  transition={{ 
-                    repeat: Infinity,
-                    duration: 25,
-                    ease: "linear" 
-                  }}
-                  className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-full blur-3xl"
-                ></motion.div>
-                <motion.div 
-                  animate={{ 
-                    rotate: -360,
-                    scale: [1, 1.2, 1],
-                    opacity: [0.2, 0.3, 0.2]
-                  }}
-                  transition={{ 
-                    repeat: Infinity,
-                    duration: 30,
-                    ease: "linear"
-                  }}
-                  className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/20 to-blue-900/20 rounded-full blur-3xl"
-                ></motion.div>
-              </>
-            )}
+            {/* Large gradient orbs */}
+            <motion.div 
+              animate={{ 
+                rotate: 360,
+                scale: [1, 1.1, 1],
+                opacity: [0.2, 0.3, 0.2]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 25,
+                ease: "linear" 
+              }}
+              className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-full blur-3xl"
+            ></motion.div>
+            <motion.div 
+              animate={{ 
+                rotate: -360,
+                scale: [1, 1.2, 1],
+                opacity: [0.2, 0.3, 0.2]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 30,
+                ease: "linear"
+              }}
+              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/20 to-blue-900/20 rounded-full blur-3xl"
+            ></motion.div>
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -1190,7 +1234,7 @@ const Page = () => {
                 className="relative"
               >
                 {/* 3D-style chat interface with glass effect */}
-                <div className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/20 border border-white/10 transform perspective-1000">
+                <div className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/20 border border-white/10 transform perspective-1000 relative">
                   {/* Glowing border effect */}
                   <div className="absolute inset-0 rounded-3xl border border-purple-500/30 opacity-60 z-0 animate-pulse"></div>
                   
@@ -1224,12 +1268,12 @@ const Page = () => {
                       transition={{ delay: 0.3 }}
                       className="mb-8 flex"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
                         <GiBrain className="text-white text-xs" />
                       </div>
                       <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
                         <p className="text-gray-100">
-                          Hello! I'm Ginie, your AI movie expert. What kind of movies or shows are you looking for today?
+                          Hello! I'm Ginie, your AI movie expert. What kind of movies or shows are you looking for today? You can ask me anything about films, directors, or tell me your mood for personalized recommendations!
                         </p>
                       </div>
                     </motion.div>
@@ -1242,7 +1286,7 @@ const Page = () => {
                       className="mb-6"
                     >
                       <div className="flex justify-end">
-                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30">
+                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
                           <p className="text-white">{aiConversations[0].question}</p>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ml-3 flex-shrink-0 mt-1 border border-white/10 shadow-md">
@@ -1258,7 +1302,7 @@ const Page = () => {
                       transition={{ delay: 0.7 }}
                       className="mb-8 flex"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
                         <GiBrain className="text-white text-xs" />
                       </div>
                       <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
@@ -1267,15 +1311,15 @@ const Page = () => {
                             Based on your request, here are some top sci-fi movies featuring time travel concepts:
                           </p>
                           
-                          {/* Movie recommendations with rich formatting - SIMPLIFIED FOR MOBILE */}
+                          {/* Movie recommendations with rich formatting */}
                           <div className="mt-4 space-y-3">
                             {[
                               {name: "Interstellar", year: "2014", rating: "8.7/10"},
                               {name: "Edge of Tomorrow", year: "2014", rating: "7.9/10"},
                               {name: "Looper", year: "2012", rating: "7.4/10"},
-                              {name: !isMobile ? "Source Code" : "", year: !isMobile ? "2011" : "", rating: !isMobile ? "7.5/10" : ""},
-                              {name: !isMobile ? "Tenet" : "", year: !isMobile ? "2020" : "", rating: !isMobile ? "7.3/10" : ""}
-                            ].filter(movie => movie.name !== "").map((movie, index) => (
+                              {name: "Source Code", year: "2011", rating: "7.5/10"},
+                              {name: "Tenet", year: "2020", rating: "7.3/10"}
+                            ].map((movie, index) => (
                               <motion.div
                                 key={index}
                                 initial={{ opacity: 0, x: -10 }}
@@ -1307,7 +1351,7 @@ const Page = () => {
                       className="mb-6"
                     >
                       <div className="flex justify-end">
-                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30">
+                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
                           <p className="text-white">Tell me more about Interstellar</p>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ml-3 flex-shrink-0 mt-1 border border-white/10 shadow-md">
@@ -1323,11 +1367,11 @@ const Page = () => {
                       transition={{ delay: 1.5 }}
                       className="mb-6 flex"
                     >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
                         <GiBrain className="text-white text-xs" />
                       </div>
                       
-                      {/* Rich movie card response - SIMPLIFIED FOR MOBILE */}
+                      {/* Rich movie card response */}
                       <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-lg overflow-hidden max-w-[85%]">
                         <div className="p-4">
                           <p className="text-gray-100 mb-3">Here's information about Interstellar:</p>
@@ -1362,7 +1406,7 @@ const Page = () => {
                             </div>
                             
                             <p className="text-gray-300 text-sm mb-3">
-                              A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival. Directed by Christopher Nolan and starring Matthew McConaughey, Anne Hathaway.
+                              A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival. Directed by Christopher Nolan and starring Matthew McConaughey, Anne Hathaway, and Jessica Chastain.
                             </p>
                             
                             <div className="border-t border-gray-800 pt-3 mt-3">
@@ -1409,7 +1453,7 @@ const Page = () => {
                     <motion.button 
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="ml-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-purple-500/30"
+                      className="ml-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-purple-600/20"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -1422,11 +1466,11 @@ const Page = () => {
                 <div className="absolute -left-6 -bottom-6 w-32 h-32 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-full blur-3xl -z-10"></div>
                 <div className="absolute -right-6 -top-6 w-40 h-40 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-3xl -z-10"></div>
                 
-                {/* Floating tech particles - REDUCED FOR MOBILE */}
-                {!isMobile && [...Array(8)].map((_, i) => (
+                {/* Floating tech particles */}
+                {[...Array(8)].map((_, i) => (
                   <motion.div
                     key={i}
-                    className="absolute rounded-full bg-white/80 z-10"
+                    className="absolute rounded-full bg-white/80 z-10 particle-animation"
                     initial={{
                       x: Math.random() * 300 - 150,
                       y: Math.random() * 300 - 150,
@@ -1480,7 +1524,7 @@ const Page = () => {
                     ></motion.div>
                   </h3>
                   
-                  {/* Enhanced AI Features with hover effects - SIMPLIFIED FOR MOBILE */}
+                  {/* Enhanced AI Features with hover effects */}
                   <div className="space-y-6 mb-12">
                     {[
                       {
@@ -1505,14 +1549,14 @@ const Page = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.7 + index * 0.15 }}
-                        whileHover={{ scale: isMobile ? 1 : 1.03, y: isMobile ? 0 : -5 }}
+                        whileHover={{ scale: 1.03, y: -5 }}
                         className="flex p-5 rounded-2xl bg-gradient-to-br from-gray-900 to-black/60 backdrop-blur-md border border-white/10 shadow-xl group transition-all duration-300 hover:shadow-purple-500/10"
                       >
-                        <div className="mr-5 p-4 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-inner group-hover:from-purple-900/30 group-hover:to-pink-900/30 transition-all duration-300">
+                        <div className="mr-5 p-4 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-inner group-hover:from-purple-900/30 group-hover:to-pink-900/30 transition-all duration-300 border border-white/5">
                           {feature.icon}
                         </div>
                         <div>
-                          <h4 className="font-bold text-white text-lg mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
+                          <h4 className="font-bold text-white text-lg mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-500 transition-all duration-300">
                             {feature.title}
                           </h4>
                           <p className="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-all duration-300">
@@ -1523,7 +1567,7 @@ const Page = () => {
                     ))}
                   </div>
                   
-                  {/* Enhanced Mood-based Selection Preview with glass morphism design - MOBILE OPTIMIZED */}
+                  {/* Enhanced Mood-based Selection Preview with glass morphism design */}
                   <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -1531,16 +1575,12 @@ const Page = () => {
                     transition={{ delay: 1 }}
                     className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-purple-500/20 transition-all duration-500"
                   >
-                    {/* Animated background gradient - DISABLED FOR MOBILE */}
-                    {!isMobile && (
-                      <>
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-pink-900/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                        
-                        {/* Decorative corner highlights */}
-                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-700"></div>
-                        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all duration-700"></div>
-                      </>
-                    )}
+                    {/* Animated background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-pink-900/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                    
+                    {/* Decorative corner highlights */}
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-700"></div>
+                    <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all duration-700"></div>
                     
                     <div className="relative z-10">
                       <h4 className="font-bold text-xl mb-6 flex items-center bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">
@@ -1548,13 +1588,13 @@ const Page = () => {
                         How are you feeling today?
                       </h4>
                       
-                      {/* Enhanced mood selection UI - ADAPTED FOR MOBILE */}
+                      {/* Enhanced mood selection UI */}
                       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
                         {moods.map((mood, index) => (
                           <motion.button
                             key={index}
                             onClick={() => handleMoodSelect(mood.id)}
-                            whileHover={{ y: isMobile ? -2 : -5, scale: isMobile ? 1.02 : 1.05 }}
+                            whileHover={{ y: -5, scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${
                               selectedMood === mood.id 
@@ -1581,7 +1621,7 @@ const Page = () => {
                         ))}
                       </div>
                       
-                      {/* Enhanced mood recommendation preview - MOBILE OPTIMIZED */}
+                      {/* Enhanced mood recommendation preview */}
                       <AnimatePresence>
                         {selectedMood && (
                           <motion.div 
@@ -1611,8 +1651,7 @@ const Page = () => {
                                 
                                 {/* Movie recommendations based on mood */}
                                 <div className="mt-4 space-y-2">
-                                  {/* Only show 2 movies on mobile for better spacing */}
-                                  {[...Array(isMobile ? 2 : 3)].map((_, i) => (
+                                  {[...Array(3)].map((_, i) => (
                                     <motion.div 
                                       key={i}
                                       initial={{ opacity: 0, x: -10 }}
@@ -1647,7 +1686,7 @@ const Page = () => {
                                 <motion.button
                                   whileHover={{ y: -2 }}
                                   whileTap={{ scale: 0.98 }}
-                                  className="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-300"
+                                  className="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-all"
                                 >
                                   <span>See All Recommendations</span>
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" viewBox="0 0 20 20" fill="currentColor">
@@ -1674,7 +1713,7 @@ const Page = () => {
                       onClick={handleDownload}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center mx-auto transition-all duration-300"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center mx-auto transition-all"
                     >
                       <FaDownload className="mr-2" />
                       Get Ginie AI Now
@@ -1690,27 +1729,21 @@ const Page = () => {
         <section
           id="screenshots"
           ref={screenshotsRef}
-          className="py-24 bg-gradient-to-b from-black to-gray-950 relative"
+          className="py-24 bg-gradient-to-b from-black to-gray-950 relative will-change-transform"
         >
           {/* Abstract background shapes */}
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute w-full h-full bg-gradient-to-b from-black via-purple-950/10 to-black"></div>
-            
-            {/* OPTIMIZED ANIMATIONS FOR MOBILE */}
-            {!isMobile && (
-              <>
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-                  className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/10 to-pink-900/10 rounded-full blur-3xl"
-                ></motion.div>
-                <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-                  className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/10 to-blue-900/10 rounded-full blur-3xl"
-                ></motion.div>
-              </>
-            )}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/10 to-pink-900/10 rounded-full blur-3xl particle-animation"
+            ></motion.div>
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/10 to-blue-900/10 rounded-full blur-3xl particle-animation"
+            ></motion.div>
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -1784,72 +1817,68 @@ const Page = () => {
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none"></div>
                   </motion.div>
 
-                  {/* Background phones showing previous and next screenshots - ONLY FOR DESKTOP */}
-                  {!isMobile && (
-                    <>
-                      <motion.div
-                        initial={{
-                          opacity: 0,
-                          x: -180,
-                          y: 40,
-                          scale: 0.8,
-                          rotateY: 30,
-                        }}
-                        animate={{
-                          opacity: 0.7,
-                          x: -180,
-                          y: 40,
-                          scale: 0.8,
-                          rotateY: 30,
-                        }}
-                        className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
-                      >
-                        <Image
-                          src={
-                            screenshots[
-                              (currentSlide - 1 + screenshots.length) %
-                                screenshots.length
-                            ].image
-                          }
-                          alt="Previous screenshot"
-                          fill
-                          sizes="288px"
-                          style={{ objectFit: "cover" }}
-                        />
-                        <div className="absolute inset-0 bg-black/40"></div>
-                      </motion.div>
+                  {/* Background phones showing previous and next screenshots */}
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      x: -180,
+                      y: 40,
+                      scale: 0.8,
+                      rotateY: 30,
+                    }}
+                    animate={{
+                      opacity: 0.7,
+                      x: -180,
+                      y: 40,
+                      scale: 0.8,
+                      rotateY: 30,
+                    }}
+                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
+                  >
+                    <Image
+                      src={
+                        screenshots[
+                          (currentSlide - 1 + screenshots.length) %
+                            screenshots.length
+                        ].image
+                      }
+                      alt="Previous screenshot"
+                      fill
+                      sizes="288px"
+                      style={{ objectFit: "cover" }}
+                    />
+                    <div className="absolute inset-0 bg-black/40"></div>
+                  </motion.div>
 
-                      <motion.div
-                        initial={{
-                          opacity: 0,
-                          x: 180,
-                          y: 40,
-                          scale: 0.8,
-                          rotateY: -30,
-                        }}
-                        animate={{
-                          opacity: 0.7,
-                          x: 180,
-                          y: 40,
-                          scale: 0.8,
-                          rotateY: -30,
-                        }}
-                        className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
-                      >
-                        <Image
-                          src={
-                            screenshots[(currentSlide + 1) % screenshots.length]
-                              .image
-                          }
-                          alt="Next screenshot"
-                          fill
-                          sizes="288px"
-                          style={{ objectFit: "cover" }}
-                        />
-                        <div className="absolute inset-0 bg-black/40"></div>
-                      </motion.div>
-                    </>
-                  )}
+                  <motion.div
+                    initial={{
+                      opacity: 0,
+                      x: 180,
+                      y: 40,
+                      scale: 0.8,
+                      rotateY: -30,
+                    }}
+                    animate={{
+                      opacity: 0.7,
+                      x: 180,
+                      y: 40,
+                      scale: 0.8,
+                      rotateY: -30,
+                    }}
+                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
+                  >
+                    <Image
+                      src={
+                        screenshots[(currentSlide + 1) % screenshots.length]
+                          .image
+                      }
+                      alt="Next screenshot"
+                      fill
+                      sizes="288px"
+                      style={{ objectFit: "cover" }}
+                    />
+                    <div className="absolute inset-0 bg-black/40"></div>
+                  </motion.div>
                 </div>
               </div>
 
@@ -1921,7 +1950,7 @@ const Page = () => {
         <section
           id="testimonials"
           ref={testimonialsRef}
-          className="py-24 bg-gray-950"
+          className="py-24 bg-gray-950 will-change-transform"
         >
           <div className="container mx-auto px-4">
             <motion.div
@@ -1947,7 +1976,7 @@ const Page = () => {
               </p>
             </motion.div>
 
-            {/* Premium testimonial cards with user avatars and ratings - OPTIMIZED FOR MOBILE */}
+            {/* Premium testimonial cards with user avatars and ratings */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {testimonials.map((testimonial, index) => (
                 <motion.div
@@ -1956,17 +1985,15 @@ const Page = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: isMobile ? -3 : -5, scale: isMobile ? 1.01 : 1.02 }}
+                  whileHover={{ y: -5, scale: 1.02 }}
                   className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-900/20 relative overflow-hidden group"
                 >
                   {/* Animated background gradient */}
-                  {!isMobile && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 1 }}
-                      className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-pink-900/10 z-0"
-                    ></motion.div>
-                  )}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-pink-900/10 z-0"
+                  ></motion.div>
 
                   {/* Decorative quote mark */}
                   <div className="absolute right-8 top-8 text-purple-500/10 text-9xl font-serif leading-none">
@@ -2011,13 +2038,11 @@ const Page = () => {
                   </div>
 
                   {/* Subtle border glow effect on hover */}
-                  {!isMobile && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileHover={{ opacity: 1 }}
-                      className="absolute inset-0 border border-purple-500/30 rounded-2xl"
-                    ></motion.div>
-                  )}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    className="absolute inset-0 border border-purple-500/30 rounded-2xl"
+                  ></motion.div>
                 </motion.div>
               ))}
             </div>
@@ -2025,7 +2050,7 @@ const Page = () => {
         </section>
 
         {/* FAQ Section with premium accordions */}
-        <section id="faq" className="py-24 bg-black">
+        <section id="faq" className="py-24 bg-black will-change-transform">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -2120,40 +2145,36 @@ const Page = () => {
         <section
           id="download"
           ref={downloadRef}
-          className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-950 to-black"
+          className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-950 to-black will-change-transform"
         >
-          {/* Animated background elements - OPTIMIZED FOR MOBILE */}
+          {/* Animated background elements */}
           <div className="absolute inset-0">
-            {!isMobile && (
-              <>
-                <motion.div
-                  animate={{
-                    rotate: [0, 360],
-                    scale: [1, 1.1, 1],
-                    opacity: [0.3, 0.4, 0.3],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 30,
-                    ease: "linear",
-                  }}
-                  className="absolute -right-1/4 -top-1/4 w-1/2 h-1/2 bg-purple-700/10 rounded-full blur-3xl"
-                ></motion.div>
-                <motion.div
-                  animate={{
-                    rotate: [0, -360],
-                    scale: [1, 1.2, 1],
-                    opacity: [0.2, 0.3, 0.2],
-                  }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 40,
-                    ease: "linear",
-                  }}
-                  className="absolute -left-1/4 -bottom-1/4 w-1/2 h-1/2 bg-pink-700/10 rounded-full blur-3xl"
-                ></motion.div>
-              </>
-            )}
+            <motion.div
+              animate={{
+                rotate: [0, 360],
+                scale: [1, 1.1, 1],
+                opacity: [0.3, 0.4, 0.3],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 30,
+                ease: "linear",
+              }}
+              className="absolute -right-1/4 -top-1/4 w-1/2 h-1/2 bg-purple-700/10 rounded-full blur-3xl particle-animation"
+            ></motion.div>
+            <motion.div
+              animate={{
+                rotate: [0, -360],
+                scale: [1, 1.2, 1],
+                opacity: [0.2, 0.3, 0.2],
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 40,
+                ease: "linear",
+              }}
+              className="absolute -left-1/4 -bottom-1/4 w-1/2 h-1/2 bg-pink-700/10 rounded-full blur-3xl particle-animation"
+            ></motion.div>
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -2186,7 +2207,7 @@ const Page = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-gradient-to-br from-gray-900 to-black p-6 sm:p-12 rounded-3xl max-w-5xl mx-auto border border-purple-800/30 shadow-2xl shadow-purple-500/10 relative overflow-hidden"
+              className="bg-gradient-to-br from-gray-900 to-black p-12 rounded-3xl max-w-5xl mx-auto border border-purple-800/30 shadow-2xl shadow-purple-500/10 relative overflow-hidden"
             >
               <div className="flex flex-col lg:flex-row items-center">
                 <div className="lg:w-1/2 mb-10 lg:mb-0">
@@ -2225,7 +2246,7 @@ const Page = () => {
                     onClick={handleDownload}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all"
                   >
                     <FaDownload className="mr-2" />
                     Download Now
@@ -2236,12 +2257,12 @@ const Page = () => {
                   </p>
                 </div>
 
-                {/* 3D mockup - SIMPLIFIED FOR MOBILE */}
                 <div className="lg:w-1/2 flex justify-center">
+                  {/* 3D mockup of device with app logo */}
                   <div className="relative perspective-1000">
                     <motion.div
                       initial={{ rotateY: -10 }}
-                      whileHover={{ rotateY: isMobile ? 0 : 10 }}
+                      whileHover={{ rotateY: 10 }}
                       transition={{ type: "spring", stiffness: 50 }}
                       className="relative w-64 h-80 md:w-80 md:h-96"
                     >
@@ -2258,21 +2279,18 @@ const Page = () => {
                               sizes="128px"
                               style={{ objectFit: "cover" }}
                             />
-                            {/* Simplified animation for mobile */}
-                            {!isMobile && (
-                              <motion.div
-                                animate={{
-                                  opacity: [0.5, 0.8, 0.5],
-                                  scale: [0.98, 1, 0.98],
-                                }}
-                                transition={{
-                                  repeat: Infinity,
-                                  duration: 3,
-                                  ease: "easeInOut",
-                                }}
-                                className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 rounded-full"
-                              ></motion.div>
-                            )}
+                            <motion.div
+                              animate={{
+                                opacity: [0.5, 0.8, 0.5],
+                                scale: [0.98, 1, 0.98],
+                              }}
+                              transition={{
+                                repeat: Infinity,
+                                duration: 3,
+                                ease: "easeInOut",
+                              }}
+                              className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-pink-500/10 rounded-full"
+                            ></motion.div>
                           </div>
                         </div>
                       </div>
@@ -2334,7 +2352,7 @@ const Page = () => {
                 },
                 {
                   name: "Web",
-                  icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm7.36 6.58A8.82 8.82 0 0 1 20 12c0 1.3-.28 2.54-.79 3.66a5 5 0 0 0-3.85-2.07v-.02A2.75 2.75 0 0 1 12.6 11a2.75 2.75 0 0 1-2.75 2.75c-.6 0-1.14-.24-1.55-.64a5.03 5.03 0 0 0-3.9 2.2A7.94 7.94 0 0 1 4 12c0-1.53.43-2.95 1.17-4.17",
+                  icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm7.36 6.58A8.82 8.82 0 0 1 20 12c0 1.3-.28 2.54-.79 3.66a5 5 0 0 0-3.85-2.07v-.02A2.75 2.75 0 0 1 12.6 11a2.75 2.75 0 0 1-2.75 2.75 2.75 2.75 0 0 1-2.75-2.75 2.75 2.75 0 0 1 2.76-2.75c.91 0 1.62.45 2.12 1.09A6 6 0 0 1 4.84 6.84 8.05 8.05 0 0 1 12 4c2.76 0 5.26 1.4 6.93 3.59z",
                 },
               ].map((device, index) => (
                 <div key={index} className="flex flex-col items-center">
@@ -2445,7 +2463,7 @@ const Page = () => {
                       className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
                     >
                       Testimonials
-                    </a>
+                      </a>
                   </li>
                   <li>
                     <a
@@ -2462,7 +2480,7 @@ const Page = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-6">Contact</h3>
                 <ul className="space-y-4">
-                <li className="flex items-start">
+                  <li className="flex items-start">
                     <a
                       href="https://x.com/PixelNiladri"
                       target="_blank"
@@ -2538,20 +2556,28 @@ const Page = () => {
           from, to { border-color: transparent }
           50% { border-color: transparent }
         }
-        
-        /* Added media queries for responsive design */
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .nav-link {
-            font-size: 0.9rem;
-            padding: 0.5rem;
-          }
+
+        /* Optimize scrolling performance */
+        * {
+          -webkit-overflow-scrolling: touch;
+          transform: translateZ(0);
+          backface-visibility: hidden;
         }
-        
-        /* Optimize feature cards spacing for mobile */
+
+        /* Carousel animation */
+        .image-carousel {
+          transition: transform 0.5s ease-in-out;
+        }
+
+        /* Disable hover effects on mobile for better performance */
         @media (max-width: 767px) {
-          .feature-card {
-            margin-bottom: 0.75rem;
-            padding: 1rem;
+          .will-change-transform {
+            will-change: transform;
+          }
+
+          /* Reduce motion on mobile */
+          .particle-animation {
+            display: none;
           }
         }
       `}</style>
