@@ -362,13 +362,26 @@ const Page = () => {
     };
   }, [phoneImages.length]);
 
+  // Add this effect to prevent body scrolling when modal is open
+useEffect(() => {
+  if (showDownloadModal) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+
+  return () => {
+    document.body.style.overflow = 'auto';
+  };
+}, [showDownloadModal]);
+
   // Handle download click with Google Drive link
   // Replace your existing handleDownload function
   const handleDownload = () => {
-    // Show the download form modal instead of directly downloading
+    console.log("Download button clicked"); // Add this debug line
     setShowDownloadModal(true);
+    console.log("Modal state after click:", showDownloadModal); // Add this debug line
   };
-
   // Add this new function to handle the actual download after form submission
   const handleDownloadSubmit = async (e) => {
     e.preventDefault();
@@ -2760,161 +2773,162 @@ const Page = () => {
         </footer>
         {/* Download Form Modal */}
         <AnimatePresence>
-          {showDownloadModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-              onClick={() => setShowDownloadModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-500/30 shadow-2xl max-w-md w-full"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-                  Download Ginie AI
-                </h3>
+  {showDownloadModal && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/80 backdrop-blur-sm p-4 overflow-y-auto"
+      onClick={() => setShowDownloadModal(false)}
+      style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0, y: -50 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl border border-purple-500/30 shadow-2xl max-w-md w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+          Download Ginie AI
+        </h3>
 
-                <p className="text-gray-300 mb-6">
-                  Please provide your information to download the app. We'll
-                  keep you updated with new features and improvements.
-                </p>
+        <p className="text-gray-300 mb-6">
+          Please provide your information to download the app. We'll
+          keep you updated with new features and improvements.
+        </p>
 
-                <form onSubmit={handleDownloadSubmit}>
-                  {formError && (
-                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded-lg text-red-200 text-sm">
-                      {formError}
-                    </div>
-                  )}
-
-                  <div className="mb-4">
-                    <label
-                      htmlFor="name"
-                      className="block text-gray-300 mb-2 text-sm"
-                    >
-                      Your Name*
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      value={downloadFormData.name}
-                      onChange={(e) =>
-                        setDownloadFormData({
-                          ...downloadFormData,
-                          name: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
-                      placeholder="John Doe"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label
-                      htmlFor="email"
-                      className="block text-gray-300 mb-2 text-sm"
-                    >
-                      Email Address*
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      value={downloadFormData.email}
-                      onChange={(e) =>
-                        setDownloadFormData({
-                          ...downloadFormData,
-                          email: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
-                      placeholder="john@example.com"
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-6">
-                    <label
-                      htmlFor="phone"
-                      className="block text-gray-300 mb-2 text-sm"
-                    >
-                      Phone Number (Optional)
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      value={downloadFormData.phone}
-                      onChange={(e) =>
-                        setDownloadFormData({
-                          ...downloadFormData,
-                          phone: e.target.value,
-                        })
-                      }
-                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
-                      placeholder="+1 (123) 456-7890"
-                    />
-                  </div>
-
-                  <div className="flex space-x-4">
-                    <button
-                      type="button"
-                      onClick={() => setShowDownloadModal(false)}
-                      className="flex-1 py-3 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors"
-                    >
-                      Cancel
-                    </button>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70"
-                    >
-                      {isSubmitting ? (
-                        <span className="flex items-center">
-                          <svg
-                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          Processing...
-                        </span>
-                      ) : (
-                        <span className="flex items-center">
-                          <FaDownload className="mr-2" />
-                          Download Now
-                        </span>
-                      )}
-                    </button>
-                  </div>
-
-                  <p className="mt-6 text-xs text-gray-400 text-center">
-                    By downloading, you agree to our Terms of Service and
-                    Privacy Policy.
-                  </p>
-                </form>
-              </motion.div>
-            </motion.div>
+        <form onSubmit={handleDownloadSubmit}>
+          {formError && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/40 rounded-lg text-red-200 text-sm">
+              {formError}
+            </div>
           )}
-        </AnimatePresence>
+
+          <div className="mb-4">
+            <label
+              htmlFor="name"
+              className="block text-gray-300 mb-2 text-sm"
+            >
+              Your Name*
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={downloadFormData.name}
+              onChange={(e) =>
+                setDownloadFormData({
+                  ...downloadFormData,
+                  name: e.target.value,
+                })
+              }
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
+              placeholder="John Doe"
+              required
+            />
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="block text-gray-300 mb-2 text-sm"
+            >
+              Email Address*
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={downloadFormData.email}
+              onChange={(e) =>
+                setDownloadFormData({
+                  ...downloadFormData,
+                  email: e.target.value,
+                })
+              }
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
+              placeholder="john@example.com"
+              required
+            />
+          </div>
+
+          <div className="mb-6">
+            <label
+              htmlFor="phone"
+              className="block text-gray-300 mb-2 text-sm"
+            >
+              Phone Number (Optional)
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              value={downloadFormData.phone}
+              onChange={(e) =>
+                setDownloadFormData({
+                  ...downloadFormData,
+                  phone: e.target.value,
+                })
+              }
+              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors"
+              placeholder="+1 (123) 456-7890"
+            />
+          </div>
+
+          <div className="flex space-x-4">
+            <button
+              type="button"
+              onClick={() => setShowDownloadModal(false)}
+              className="flex-1 py-3 px-4 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 transition-colors"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3 px-4 rounded-lg shadow-lg flex items-center justify-center transition-all disabled:opacity-70"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center">
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  <FaDownload className="mr-2" />
+                  Download Now
+                </span>
+              )}
+            </button>
+          </div>
+
+          <p className="mt-6 text-xs text-gray-400 text-center">
+            By downloading, you agree to our Terms of Service and
+            Privacy Policy.
+          </p>
+        </form>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
       </div>
 
       {/* Custom CSS for navigation links with underline effect */}
