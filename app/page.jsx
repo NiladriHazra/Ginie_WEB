@@ -44,9 +44,22 @@ const Page = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("ai"); // Changed from "all" to "ai"
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedMood, setSelectedMood] = useState(null);
+  
+  // For phone images carousel
+  const [phoneImages] = useState([
+    "/assets/images/genieai.jpg",
+    "/assets/images/foryou.jpg", 
+    "/assets/images/genre.jpg", 
+    "/assets/images/aisearch.jpg",
+    "/assets/images/aipick.jpg"
+  ]);
+  const [currentPhoneImage, setCurrentPhoneImage] = useState(0);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const phoneImageRef = useRef(null);
 
   // Refs for scroll animations
   const heroRef = useRef(null);
@@ -192,17 +205,17 @@ const Page = () => {
     {
       question: "Find me some sci-fi movies with time travel",
       answer:
-        "Based on your request, here are some top sci-fi movies featuring time travel concepts:\n\n1. Interstellar (2014)\n2. Edge of Tomorrow (2014)\n3. Looper (2012)\n4. Source Code (2011)\n5. Tenet (2020)\n\nWould you like more recommendations or specific details about any of these movies?",
+        "Based on your request, here are some top sci-fi movies featuring time travel concepts:\n\n1. Interstellar (2014)\n2. Edge of Tomorrow (2014)\n3. Looper (2012)\n4. Source Code (2011)\n5. [...]"
     },
     {
       question: "Recommend movies similar to Interstellar",
       answer:
-        "If you enjoyed Interstellar, you might like these similar movies:\n\n1. Arrival (2016) - Another cerebral sci-fi with themes of time\n2. The Martian (2015) - Space survival with scientific accuracy\n3. Gravity (2013) - Tense space thriller with stunning visuals\n4. Ad Astra (2019) - Space exploration with emotional depth\n5. Contact (1997) - First contact story with philosophical themes\n\nWould you like to know more about any of these?",
+        "If you enjoyed Interstellar, you might like these similar movies:\n\n1. Arrival (2016) - Another cerebral sci-fi with themes of time\n2. The Martian (2015) - Space survival with scientif[...]"
     },
     {
       question: "I'm feeling sad, what should I watch?",
       answer:
-        "When you're feeling down, these movies might help lift your spirits:\n\n1. The Secret Life of Walter Mitty - An uplifting adventure\n2. Soul - Pixar's heartwarming exploration of purpose\n3. Good Will Hunting - Emotional but ultimately hopeful\n4. The Pursuit of Happyness - Inspiring true story\n5. Little Miss Sunshine - Quirky comedy with heart\n\nSometimes watching a touching film can be cathartic and help process emotions.",
+        "When you're feeling down, these movies might help lift your spirits:\n\n1. The Secret Life of Walter Mitty - An uplifting adventure\n2. Soul - Pixar's heartwarming exploration of purpose[...]"
     },
   ];
 
@@ -210,28 +223,28 @@ const Page = () => {
   const testimonials = [
     {
       content:
-        "Ginie AI has completely transformed how I discover movies. The mood-based recommendations are spot-on and the AI assistant feels like having a film expert in my pocket. I've discovered so many hidden gems I would have never found otherwise.",
+        "Ginie AI has completely transformed how I discover movies. The mood-based recommendations are spot-on and the AI assistant feels like having a film expert in my pocket. I've discovered s[...]",
       author: "Eesha S.",
       role: "Film Enthusiast",
       avatar: "https://randomuser.me/api/portraits/women/99.jpg",
     },
     {
       content:
-        "As someone who travels frequently, finding good content quickly is essential. Ginie's AI understands my taste perfectly and the clean interface makes browsing effortless. The personalized recommendations have been incredibly accurate.",
+        "As someone who travels frequently, finding good content quickly is essential. Ginie's AI understands my taste perfectly and the clean interface makes browsing effortless. The personalize[...]",
       author: "Michael T.",
       role: "Content Creator",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     },
     {
       content:
-        "I've tried many movie apps, but Ginie AI is in a league of its own. The AI chat feature is brilliant - I can describe vague movie plots and it figures out exactly what I'm looking for. My entire family uses it and we each get our own tailored recommendations.",
+        "I've tried many movie apps, but Ginie AI is in a league of its own. The AI chat feature is brilliant - I can describe vague movie plots and it figures out exactly what I'm looking for. M[...]",
       author: "Eidena R.",
       role: "Ex Google Engineer",
       avatar: "https://randomuser.me/api/portraits/men/68.jpg",
     },
     {
       content:
-        "The mood-based recommendation system is genius! On days when I'm feeling down, Ginie suggests uplifting movies that genuinely help improve my mood. It's like the app understands not just what I want to watch but what I need to watch.",
+        "The mood-based recommendation system is genius! On days when I'm feeling down, Ginie suggests uplifting movies that genuinely help improve my mood. It's like the app understands not just[...]",
       author: "Rupam D.",
       role: "Psychologist & Film Lover",
       avatar: "https://randomuser.me/api/portraits/men/50.jpg",
@@ -243,29 +256,50 @@ const Page = () => {
     {
       question: "What makes Ginie AI different from other movie apps?",
       answer:
-        "Ginie AI combines advanced AI recommendations with emotional intelligence. Unlike other apps that just suggest content based on genre, Ginie offers mood-based recommendations, has a conversational AI assistant you can chat with, and learns your preferences over time to deliver increasingly personalized suggestions. Our app also analyzes your watchlist to offer insights about your viewing patterns.",
+        "Ginie AI combines advanced AI recommendations with emotional intelligence. Unlike other apps that just suggest content based on genre, Ginie offers mood-based recommendations, has a conv[...]"
     },
     {
       question: "How does the mood-based recommendation work?",
       answer:
-        "Our mood-based recommendation system uses a combination of content analysis and emotional psychology. When you select a mood (like happy, sad, excited, or relaxed), our AI analyzes thousands of films for emotional tone, pacing, narrative arcs, and other factors to suggest content that will either complement or help shift your current emotional state, depending on what would benefit you most.",
+        "Our mood-based recommendation system uses a combination of content analysis and emotional psychology. When you select a mood (like happy, sad, excited, or relaxed), our AI analyzes thous[...]"
     },
     {
       question: "Can I use Ginie AI on multiple devices?",
       answer:
-        "Yes! Ginie AI is available on Android, iOS, and web browsers. Your account syncs seamlessly across all platforms, so your watchlist, preferences, and recommendations are always up to date no matter which device you're using.",
+        "Yes! Ginie AI is available on Android, iOS, and web browsers. Your account syncs seamlessly across all platforms, so your watchlist, preferences, and recommendations are always up to dat[...]"
     },
     {
       question: "How often is the content library updated?",
       answer:
-        "We add new movies and shows every day. Our system automatically incorporates new releases as they become available on major platforms, and our content team curates special collections regularly. Premium releases typically arrive within weeks of their theatrical or streaming premiere.",
+        "We add new movies and shows every day. Our system automatically incorporates new releases as they become available on major platforms, and our content team curates special collections re[...]"
     },
     {
       question: "Is my viewing data secure with Ginie AI?",
       answer:
-        "Absolutely! We take data privacy very seriously. All user data is encrypted and stored securely. Your viewing habits and preferences are only used to improve your personal recommendations and are never sold to third parties. You can review and manage your data in the privacy settings of the app at any time.",
+        "Absolutely! We take data privacy very seriously. All user data is encrypted and stored securely. Your viewing habits and preferences are only used to improve your personal recommendation[...]"
     },
   ];
+
+  // Handle touch events for phone carousel
+  const handleTouchStart = (e) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      // Swiped left
+      setCurrentPhoneImage((prev) => (prev + 1) % phoneImages.length);
+    }
+
+    if (touchEnd - touchStart > 75) {
+      // Swiped right
+      setCurrentPhoneImage((prev) => (prev - 1 + phoneImages.length) % phoneImages.length);
+    }
+  };
 
   useEffect(() => {
     // Reduced loading time for better UX
@@ -278,11 +312,45 @@ const Page = () => {
       setCurrentSlide((prev) => (prev + 1) % screenshots.length);
     }, 5000);
 
+    // Auto-slide for phone images carousel
+    const phoneSlideInterval = setInterval(() => {
+      setCurrentPhoneImage((prev) => (prev + 1) % phoneImages.length);
+    }, 3000);
+
+    // Optimize mobile performance by removing some animations
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        // Optimize for mobile by reducing particle animations
+        const particles = document.querySelectorAll('.particle-animation');
+        particles.forEach(particle => {
+          particle.style.display = 'none';
+        });
+      }
+    };
+
+    // Apply optimizations on load and resize
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Apply passive event listeners to improve scroll performance
+    const touchOptions = { passive: true };
+    const touchElements = document.querySelectorAll('.touch-handler');
+    touchElements.forEach(el => {
+      el.addEventListener('touchstart', handleTouchStart, touchOptions);
+      el.addEventListener('touchmove', handleTouchMove, touchOptions);
+    });
+
     return () => {
       clearTimeout(timer);
       clearInterval(slideInterval);
+      clearInterval(phoneSlideInterval);
+      window.removeEventListener('resize', handleResize);
+      touchElements.forEach(el => {
+        el.removeEventListener('touchstart', handleTouchStart);
+        el.removeEventListener('touchmove', handleTouchMove);
+      });
     };
-  }, []);
+  }, [phoneImages.length]);
 
   // Handle download click with Google Drive link
   const handleDownload = () => {
@@ -388,6 +456,7 @@ const Page = () => {
           content="Discover your next favorite movie with Ginie AI - the ultimate movie discovery app with AI-powered recommendations, mood-based suggestions, and personalized content."
         />
         <link rel="icon" href="/favicon.ico" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
       </Head>
 
       <div className="relative overflow-x-hidden bg-black text-white">
@@ -463,7 +532,7 @@ const Page = () => {
               </a>
               <button
                 onClick={handleDownload}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-6 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
               >
                 <FaDownload className="mr-2" />
                 Download
@@ -474,7 +543,7 @@ const Page = () => {
             <div className="md:hidden flex items-center space-x-4">
               <button
                 onClick={handleDownload}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-2 px-4 rounded-full flex items-center justify-center cursor-pointer transform transition-all duration-200 hover:scale-105 shadow-lg"
               >
                 <FaDownload className="mr-2" size={14} />
                 <span className="text-sm">Download</span>
@@ -560,12 +629,12 @@ const Page = () => {
           <div className="absolute inset-0 z-0">
             <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-950/20 to-black"></div>
 
-            {/* Animated particles */}
+            {/* Animated particles - optimized for performance */}
             <div className="absolute inset-0 overflow-hidden">
-              {[...Array(20)].map((_, i) => (
+              {[...Array(10)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="absolute rounded-full bg-purple-500/20 blur-3xl"
+                  className="absolute rounded-full bg-purple-500/20 blur-3xl particle-animation"
                   initial={{
                     x: Math.random() * 100 - 50 + "%",
                     y: Math.random() * 100 - 50 + "%",
@@ -651,7 +720,7 @@ const Page = () => {
                 >
                   <button
                     onClick={handleDownload}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105"
                   >
                     <FaDownload className="mr-2" />
                     Download Now
@@ -705,23 +774,66 @@ const Page = () => {
                 style={{ y: heroY }}
                 className="lg:w-1/2 flex justify-center relative"
               >
-                {/* Main phone mockup */}
+                {/* Main phone mockup with image carousel */}
                 <motion.div
                   className="relative w-72 h-[36rem] md:w-80 md:h-[40rem]"
                   whileHover={{ rotateY: 5, rotateX: -5 }}
                   transition={{ type: "spring", stiffness: 100 }}
                 >
                   {/* Phone frame with screen */}
-                  <div className="absolute w-full h-full rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-2xl shadow-purple-500/20">
+                  <div 
+                    className="absolute w-full h-full rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-2xl shadow-purple-500/20 touch-handler"
+                    ref={phoneImageRef}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10"></div>
-                    <Image
-                      src="/assets/images/genieai.jpg"
-                      alt="Ginie AI App Screenshot"
-                      fill
-                      sizes="(max-width: 768px) 288px, 320px"
-                      priority
-                      style={{ objectFit: "cover" }}
-                    />
+                    
+                    {/* Phone screen images carousel */}
+                    <div className="relative h-full w-full">
+                      <AnimatePresence>
+                        {phoneImages.map((image, index) => (
+                          <motion.div
+                            key={index}
+                            className="absolute inset-0"
+                            initial={{ opacity: 0, x: index > currentPhoneImage ? 300 : -300 }}
+                            animate={{ 
+                              opacity: index === currentPhoneImage ? 1 : 0,
+                              x: index === currentPhoneImage ? 0 : (index > currentPhoneImage ? 300 : -300)
+                            }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                            style={{ display: Math.abs(index - currentPhoneImage) <= 1 ? 'block' : 'none' }}
+                          >
+                            <Image
+                              src={image}
+                              alt={`Ginie AI App Screenshot ${index+1}`}
+                              fill
+                              sizes="(max-width: 768px) 288px, 320px"
+                              priority={index === 0}
+                              style={{ objectFit: "cover" }}
+                            />
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Phone navigation dots */}
+                    <div className="absolute bottom-8 left-0 right-0 z-20 flex justify-center space-x-2">
+                      {phoneImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentPhoneImage(index)}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            currentPhoneImage === index
+                              ? "bg-white scale-125"
+                              : "bg-white/50"
+                          }`}
+                          aria-label={`Go to image ${index + 1}`}
+                        />
+                      ))}
+                    </div>
 
                     {/* Phone notch */}
                     <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-7 bg-black rounded-b-xl z-20"></div>
@@ -863,7 +975,7 @@ const Page = () => {
               className="w-full h-16 text-gray-950"
             >
               <path
-                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,120.83,113.73,181.94,88.24,232.62,68.24,323.73,32.45,321.39,56.44Z"
+                d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,120.83,111.44,181.67,85.45c93.34-33.33,185.36-56,290.82-58.83Z"
                 fill="currentColor"
               ></path>
             </svg>
@@ -874,7 +986,7 @@ const Page = () => {
         <section
           id="features"
           ref={featuresRef}
-          className="py-24 bg-gradient-to-b from-gray-950 to-black"
+          className="py-24 bg-gradient-to-b from-gray-950 to-black will-change-transform"
         >
           <div className="container mx-auto px-4">
             <motion.div
@@ -956,12 +1068,12 @@ const Page = () => {
                     <div className="absolute -top-10 -right-10 w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-full blur-xl"></div>
 
                     {/* Feature icon with improved styling */}
-                    <div className="mb-6 p-4 bg-black/50 rounded-2xl inline-block group-hover:bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-300 relative z-10 border border-gray-800 group-hover:border-white/20">
+                    <div className="mb-6 p-4 bg-black/50 rounded-2xl inline-block group-hover:bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-300 relative z-10 border border-gray-700 group-hover:border-transparent">
                       {feature.icon}
                     </div>
 
                     {/* Feature title with animated gradient text on hover */}
-                    <h3 className="text-xl font-semibold mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-600 transition-colors duration-300 relative z-10">
+                    <h3 className="text-xl font-semibold mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-600 transition-all duration-300 relative z-10">
                       {feature.title}
                     </h3>
 
@@ -1027,600 +1139,597 @@ const Page = () => {
           </div>
         </section>
 
-        {/* AI Assistant Section - New */}
         {/* AI Assistant Section - Enhanced with stunning visuals */}
-<section id="ai" ref={aiRef} className="py-24 bg-black relative overflow-hidden">
-  {/* Enhanced animated background */}
-  <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute w-full h-full bg-gradient-to-b from-black via-purple-950/10 to-black"></div>
-    
-    {/* Animated floating particles */}
-    {[...Array(30)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute rounded-full bg-white"
-        initial={{
-          x: Math.random() * 100 - 50 + '%',
-          y: Math.random() * 100 + '%',
-          scale: Math.random() * 0.2 + 0.1,
-          opacity: Math.random() * 0.3 + 0.1
-        }}
-        animate={{
-          y: ['-20%', '120%'],
-        }}
-        transition={{
-          duration: Math.random() * 20 + 15,
-          repeat: Infinity,
-          ease: "linear"
-        }}
-        style={{
-          width: Math.random() * 3 + 1 + 'px',
-          height: Math.random() * 3 + 1 + 'px',
-          left: Math.random() * 100 + '%',
-          filter: 'blur(1px)',
-        }}
-      />
-    ))}
-    
-    {/* Large gradient orbs */}
-    <motion.div 
-      animate={{ 
-        rotate: 360,
-        scale: [1, 1.1, 1],
-        opacity: [0.2, 0.3, 0.2]
-      }}
-      transition={{ 
-        repeat: Infinity,
-        duration: 25,
-        ease: "linear" 
-      }}
-      className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-full blur-3xl"
-    ></motion.div>
-    <motion.div 
-      animate={{ 
-        rotate: -360,
-        scale: [1, 1.2, 1],
-        opacity: [0.2, 0.3, 0.2]
-      }}
-      transition={{ 
-        repeat: Infinity,
-        duration: 30,
-        ease: "linear"
-      }}
-      className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/20 to-blue-900/20 rounded-full blur-3xl"
-    ></motion.div>
-  </div>
-
-  <div className="container mx-auto px-4 relative z-10">
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className="text-center mb-16"
-    >
-      <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
-        <span className="text-purple-300 font-medium text-sm flex items-center justify-center">
-          <GiBrain className="mr-2" />
-          AI ASSISTANT
-        </span>
-      </span>
-      <h2 className="text-4xl md:text-5xl font-bold mb-6">
-        Chat with <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">Ginie AI</span>
-      </h2>
-      <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-        Our conversational AI assistant helps you discover movies and shows through natural conversation. Just ask what you're in the mood for!
-      </p>
-    </motion.div>
-
-    {/* AI Chat Showcase - Enhanced visual design */}
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-      {/* Left: Enhanced Chat Interface Mockup */}
-      <motion.div 
-        initial={{ opacity: 0, x: -20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.2 }}
-        className="relative"
-      >
-        {/* 3D-style chat interface with glass effect */}
-        <div className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/20 border border-white/10 transform perspective-1000">
-          {/* Glowing border effect */}
-          <div className="absolute inset-0 rounded-3xl border border-purple-500/30 opacity-60 z-0 animate-pulse"></div>
-          
-          {/* Chat header with premium styling */}
-          <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 border-b border-white/10 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-4 shadow-lg shadow-purple-500/30">
-                <GiBrain className="text-white text-lg" />
-              </div>
-              <div>
-                <h3 className="font-bold text-white text-lg">Ginie AI</h3>
-                <div className="flex items-center">
-                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
-                  <p className="text-xs text-gray-300">Online now</p>
-                </div>
-              </div>
-            </div>
+        <section id="ai" ref={aiRef} className="py-24 bg-black relative overflow-hidden will-change-transform">
+          {/* Enhanced animated background */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute w-full h-full bg-gradient-to-b from-black via-purple-950/10 to-black"></div>
             
-            {/* Premium indicator */}
-            <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-              <span className="text-xs font-medium text-white">Premium AI</span>
-            </div>
+            {/* Animated floating particles */}
+            {[...Array(15)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-white particle-animation"
+                initial={{
+                  x: Math.random() * 100 - 50 + '%',
+                  y: Math.random() * 100 + '%',
+                  scale: Math.random() * 0.2 + 0.1,
+                  opacity: Math.random() * 0.3 + 0.1
+                }}
+                animate={{
+                  y: ['-20%', '120%'],
+                }}
+                transition={{
+                  duration: Math.random() * 20 + 15,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+                style={{
+                  width: Math.random() * 3 + 1 + 'px',
+                  height: Math.random() * 3 + 1 + 'px',
+                  left: Math.random() * 100 + '%',
+                  filter: 'blur(1px)',
+                }}
+              />
+            ))}
+            
+            {/* Large gradient orbs */}
+            <motion.div 
+              animate={{ 
+                rotate: 360,
+                scale: [1, 1.1, 1],
+                opacity: [0.2, 0.3, 0.2]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 25,
+                ease: "linear" 
+              }}
+              className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-full blur-3xl"
+            ></motion.div>
+            <motion.div 
+              animate={{ 
+                rotate: -360,
+                scale: [1, 1.2, 1],
+                opacity: [0.2, 0.3, 0.2]
+              }}
+              transition={{ 
+                repeat: Infinity,
+                duration: 30,
+                ease: "linear"
+              }}
+              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/20 to-blue-900/20 rounded-full blur-3xl"
+            ></motion.div>
           </div>
-          
-          {/* Enhanced chat messages with better styling */}
-          <div className="p-6 max-h-[500px] overflow-y-auto" style={{background: 'linear-gradient(to bottom, rgba(17, 24, 39, 0.7), rgba(17, 24, 39, 0.4))'}}>
-            {/* Welcome message with animation */}
+
+          <div className="container mx-auto px-4 relative z-10">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="mb-8 flex"
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
-                <GiBrain className="text-white text-xs" />
-              </div>
-              <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
-                <p className="text-gray-100">
-                  Hello! I'm Ginie, your AI movie expert. What kind of movies or shows are you looking for today? You can ask me anything about films, directors, or tell me your mood for personalized recommendations.
-                </p>
-              </div>
+              <span className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm border border-purple-700/50 mb-4">
+                <span className="text-purple-300 font-medium text-sm flex items-center justify-center">
+                  <GiBrain className="mr-2" />
+                  AI ASSISTANT
+                </span>
+              </span>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Chat with <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-purple-300">Ginie AI</span>
+              </h2>
+              <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+                Our conversational AI assistant helps you discover movies and shows through natural conversation. Just ask what you're in the mood for!
+              </p>
             </motion.div>
-            
-            {/* User question with enhanced styling */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="mb-6"
-            >
-              <div className="flex justify-end">
-                <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
-                  <p className="text-white">{aiConversations[0].question}</p>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ml-3 flex-shrink-0 mt-1 border border-white/10 shadow-md">
-                  <span className="text-xs font-medium text-gray-300">You</span>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* AI response with typing animation */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="mb-8 flex"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
-                <GiBrain className="text-white text-xs" />
-              </div>
-              <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
-                <div className="typewriter">
-                  <p className="text-gray-100 whitespace-pre-line">
-                    Based on your request, here are some top sci-fi movies featuring time travel concepts:
-                  </p>
+
+            {/* AI Chat Showcase - Enhanced visual design */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left: Enhanced Chat Interface Mockup */}
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="relative"
+              >
+                {/* 3D-style chat interface with glass effect */}
+                <div className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-xl rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/20 border border-white/10 transform perspective-1000 relative">
+                  {/* Glowing border effect */}
+                  <div className="absolute inset-0 rounded-3xl border border-purple-500/30 opacity-60 z-0 animate-pulse"></div>
                   
-                  {/* Movie recommendations with rich formatting */}
-                  <div className="mt-4 space-y-3">
+                  {/* Chat header with premium styling */}
+                  <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 border-b border-white/10 px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-4 shadow-lg shadow-purple-500/30">
+                        <GiBrain className="text-white text-lg" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-lg">Ginie AI</h3>
+                        <div className="flex items-center">
+                          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></span>
+                          <p className="text-xs text-gray-300">Online now</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Premium indicator */}
+                    <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                      <span className="text-xs font-medium text-white">Premium AI</span>
+                    </div>
+                  </div>
+                  
+                  {/* Enhanced chat messages with better styling */}
+                  <div className="p-6 max-h-[500px] overflow-y-auto" style={{background: 'linear-gradient(to bottom, rgba(17, 24, 39, 0.7), rgba(17, 24, 39, 0.4))'}}>
+                    {/* Welcome message with animation */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="mb-8 flex"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
+                        <GiBrain className="text-white text-xs" />
+                      </div>
+                      <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
+                        <p className="text-gray-100">
+                          Hello! I'm Ginie, your AI movie expert. What kind of movies or shows are you looking for today? You can ask me anything about films, directors, or tell me your mood for personalized recommendations!
+                        </p>
+                      </div>
+                    </motion.div>
+                    
+                    {/* User question with enhanced styling */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 }}
+                      className="mb-6"
+                    >
+                      <div className="flex justify-end">
+                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
+                          <p className="text-white">{aiConversations[0].question}</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ml-3 flex-shrink-0 mt-1 border border-white/10 shadow-md">
+                          <span className="text-xs font-medium text-gray-300">You</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                    
+                    {/* AI response with typing animation */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7 }}
+                      className="mb-8 flex"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
+                        <GiBrain className="text-white text-xs" />
+                      </div>
+                      <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md px-5 py-4 rounded-t-2xl rounded-br-2xl rounded-bl-sm border border-white/10 shadow-lg">
+                        <div className="typewriter">
+                          <p className="text-gray-100 whitespace-pre-line">
+                            Based on your request, here are some top sci-fi movies featuring time travel concepts:
+                          </p>
+                          
+                          {/* Movie recommendations with rich formatting */}
+                          <div className="mt-4 space-y-3">
+                            {[
+                              {name: "Interstellar", year: "2014", rating: "8.7/10"},
+                              {name: "Edge of Tomorrow", year: "2014", rating: "7.9/10"},
+                              {name: "Looper", year: "2012", rating: "7.4/10"},
+                              {name: "Source Code", year: "2011", rating: "7.5/10"},
+                              {name: "Tenet", year: "2020", rating: "7.3/10"}
+                            ].map((movie, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.9 + index * 0.1 }}
+                                className="flex items-center"
+                              >
+                                <span className="text-purple-400 mr-2">•</span>
+                                <span className="text-white font-medium">{movie.name}</span>
+                                <span className="text-gray-400 text-sm ml-2">({movie.year})</span>
+                                <div className="ml-auto flex items-center">
+                                  <BsStarFill className="text-yellow-500 text-xs mr-1" />
+                                  <span className="text-gray-300 text-sm">{movie.rating}</span>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                          
+                          <p className="text-gray-200 mt-4">Would you like more recommendations or specific details about any of these movies?</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                    
+                    {/* User follow-up question */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.3 }}
+                      className="mb-6"
+                    >
+                      <div className="flex justify-end">
+                        <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
+                          <p className="text-white">Tell me more about Interstellar</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ml-3 flex-shrink-0 mt-1 border border-white/10 shadow-md">
+                          <span className="text-xs font-medium text-gray-300">You</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                    
+                    {/* AI detailed response */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.5 }}
+                      className="mb-6 flex"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/10">
+                        <GiBrain className="text-white text-xs" />
+                      </div>
+                      
+                      {/* Rich movie card response */}
+                      <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-lg overflow-hidden max-w-[85%]">
+                        <div className="p-4">
+                          <p className="text-gray-100 mb-3">Here's information about Interstellar:</p>
+                        </div>
+                        
+                        {/* Movie card with rich details */}
+                        <div className="bg-gradient-to-b from-gray-900 to-black/80 rounded-xl overflow-hidden border border-white/5">
+                          <div className="relative h-40 overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"></div>
+                            <div className="absolute bottom-0 left-0 p-4 z-20">
+                              <h4 className="text-xl font-bold text-white">Interstellar</h4>
+                              <div className="flex items-center">
+                                <span className="text-gray-300 text-sm">2014</span>
+                                <span className="mx-2 text-gray-400">•</span>
+                                <span className="text-gray-300 text-sm">PG-13</span>
+                                <span className="mx-2 text-gray-400">•</span>
+                                <span className="text-gray-300 text-sm">169 min</span>
+                              </div>
+                            </div>
+                            <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 flex items-center z-20">
+                              <BsStarFill className="text-yellow-500 mr-1 text-xs" />
+                              <span className="text-white text-sm font-medium">8.7/10</span>
+                            </div>
+                            <div className="w-full h-full bg-gradient-to-r from-purple-900/30 to-pink-900/30"></div>
+                          </div>
+                          
+                          <div className="p-4">
+                            <div className="mb-3">
+                              <span className="inline-block bg-purple-600/20 border border-purple-600/30 text-purple-300 text-xs font-medium px-2 py-1 rounded mr-2 mb-2">Sci-Fi</span>
+                              <span className="inline-block bg-blue-600/20 border border-blue-600/30 text-blue-300 text-xs font-medium px-2 py-1 rounded mr-2 mb-2">Adventure</span>
+                              <span className="inline-block bg-pink-600/20 border border-pink-600/30 text-pink-300 text-xs font-medium px-2 py-1 rounded mb-2">Drama</span>
+                            </div>
+                            
+                            <p className="text-gray-300 text-sm mb-3">
+                              A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival. Directed by Christopher Nolan and starring Matthew McConaughey, Anne Hathaway, and Jessica Chastain.
+                            </p>
+                            
+                            <div className="border-t border-gray-800 pt-3 mt-3">
+                              <p className="text-gray-400 text-xs mb-2">Would you like to:</p>
+                              <div className="flex flex-wrap gap-2">
+                                <button className="bg-purple-600/20 hover:bg-purple-600/30 transition-colors border border-purple-600/30 text-purple-300 text-xs px-3 py-1.5 rounded-full">
+                                  Watch Trailer
+                                </button>
+                                <button className="bg-blue-600/20 hover:bg-blue-600/30 transition-colors border border-blue-600/30 text-blue-300 text-xs px-3 py-1.5 rounded-full">
+                                  See Cast
+                                </button>
+                                <button className="bg-pink-600/20 hover:bg-pink-600/30 transition-colors border border-pink-600/30 text-pink-300 text-xs px-3 py-1.5 rounded-full">
+                                  Similar Movies
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                  
+                  {/* Enhanced chat input with animations */}
+                  <div className="bg-gradient-to-r from-gray-900/90 to-gray-800/90 px-4 py-4 border-t border-white/10 flex items-center">
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center group focus-within:border-purple-500/50 focus-within:bg-white/10 transition-all duration-300">
+                      <input 
+                        type="text" 
+                        placeholder="Ask Ginie about movies and shows..."
+                        className="bg-transparent border-none outline-none text-white w-full text-sm placeholder:text-gray-500"
+                      />
+                      <div className="flex items-center space-x-2">
+                        <button className="text-gray-400 hover:text-white transition-colors p-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                        </button>
+                        <button className="text-gray-400 hover:text-white transition-colors p-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="ml-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-purple-600/20"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </motion.button>
+                  </div>
+                </div>
+                
+                {/* Decorative elements with enhanced effects */}
+                <div className="absolute -left-6 -bottom-6 w-32 h-32 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-full blur-3xl -z-10"></div>
+                <div className="absolute -right-6 -top-6 w-40 h-40 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-3xl -z-10"></div>
+                
+                {/* Floating tech particles */}
+                {[...Array(8)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute rounded-full bg-white/80 z-10 particle-animation"
+                    initial={{
+                      x: Math.random() * 300 - 150,
+                      y: Math.random() * 300 - 150,
+                      scale: Math.random() * 0.5 + 0.5,
+                      opacity: Math.random() * 0.5 + 0.3
+                    }}
+                    animate={{
+                      x: [
+                        Math.random() * 100 - 50,
+                        Math.random() * 100 - 50
+                      ],
+                      y: [
+                        Math.random() * 100 - 50,
+                        Math.random() * 100 - 50
+                      ],
+                      opacity: [Math.random() * 0.3 + 0.2, Math.random() * 0.5 + 0.3]
+                    }}
+                    transition={{
+                      duration: Math.random() * 10 + 10,
+                      repeat: Infinity,
+                      repeatType: "reverse"
+                    }}
+                    style={{
+                      width: Math.random() * 6 + 2 + 'px',
+                      height: Math.random() * 6 + 2 + 'px',
+                      filter: 'blur(1px)',
+                    }}
+                  />
+                ))}
+              </motion.div>
+              
+              {/* Right: AI Features & Mood-based Selection with enhanced visuals */}
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="relative">
+                  {/* Header with animated highlight */}
+                  <h3 className="text-2xl font-bold mb-8 inline-block relative">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                      Discover the Magic of AI-Powered Recommendations
+                    </span>
+                    <motion.div 
+                      className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                      initial={{ width: 0 }}
+                      whileInView={{ width: '100%' }}
+                      transition={{ delay: 0.6, duration: 0.8 }}
+                      viewport={{ once: true }}
+                    ></motion.div>
+                  </h3>
+                  
+                  {/* Enhanced AI Features with hover effects */}
+                  <div className="space-y-6 mb-12">
                     {[
-                      {name: "Interstellar", year: "2014", rating: "8.7/10"},
-                      {name: "Edge of Tomorrow", year: "2014", rating: "7.9/10"},
-                      {name: "Looper", year: "2012", rating: "7.4/10"},
-                      {name: "Source Code", year: "2011", rating: "7.5/10"},
-                      {name: "Tenet", year: "2020", rating: "7.3/10"}
-                    ].map((movie, index) => (
-                      <motion.div
+                      {
+                        icon: <BiSearchAlt className="text-purple-500 text-xl" />,
+                        title: "Natural Language Search",
+                        description: "Ask for movies in natural language like 'find me sci-fi movies with time travel' or 'show me comedies with Ryan Reynolds'"
+                      },
+                      {
+                        icon: <MdOutlineMood className="text-cyan-500 text-xl" />,
+                        title: "Mood-Based Recommendations",
+                        description: "Tell Ginie how you're feeling and get personalized content that matches your emotional state"
+                      },
+                      {
+                        icon: <BiCameraMovie className="text-pink-500 text-xl" />,
+                        title: "Movie Expert Knowledge",
+                        description: "Ask specific questions about actors, directors, plots, or get recommendations similar to your favorite films"
+                      }
+                    ].map((feature, index) => (
+                      <motion.div 
                         key={index}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.9 + index * 0.1 }}
-                        className="flex items-center"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.7 + index * 0.15 }}
+                        whileHover={{ scale: 1.03, y: -5 }}
+                        className="flex p-5 rounded-2xl bg-gradient-to-br from-gray-900 to-black/60 backdrop-blur-md border border-white/10 shadow-xl group transition-all duration-300 hover:shadow-purple-500/10"
                       >
-                        <span className="text-purple-400 mr-2">•</span>
-                        <span className="text-white font-medium">{movie.name}</span>
-                        <span className="text-gray-400 text-sm ml-2">({movie.year})</span>
-                        <div className="ml-auto flex items-center">
-                          <BsStarFill className="text-yellow-500 text-xs mr-1" />
-                          <span className="text-gray-300 text-sm">{movie.rating}</span>
+                        <div className="mr-5 p-4 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-inner group-hover:from-purple-900/30 group-hover:to-pink-900/30 transition-all duration-300 border border-white/5">
+                          {feature.icon}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white text-lg mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-500 transition-all duration-300">
+                            {feature.title}
+                          </h4>
+                          <p className="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-all duration-300">
+                            {feature.description}
+                          </p>
                         </div>
                       </motion.div>
                     ))}
                   </div>
                   
-                  <p className="text-gray-200 mt-4">Would you like more recommendations or specific details about any of these movies?</p>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* User follow-up question */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.3 }}
-              className="mb-6"
-            >
-              <div className="flex justify-end">
-                <div className="bg-gradient-to-r from-purple-600/90 to-pink-600/90 px-5 py-4 rounded-t-2xl rounded-bl-2xl rounded-br-sm shadow-lg shadow-purple-600/10 border border-purple-500/30 max-w-[85%]">
-                  <p className="text-white">Tell me more about Interstellar</p>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center ml-3 flex-shrink-0 mt-1 border border-white/10 shadow-md">
-                  <span className="text-xs font-medium text-gray-300">You</span>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* AI detailed response */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.5 }}
-              className="mb-6 flex"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 flex-shrink-0 mt-1 shadow-lg shadow-purple-500/20 border border-white/20">
-                <GiBrain className="text-white text-xs" />
-              </div>
-              
-              {/* Rich movie card response */}
-              <div className="bg-gradient-to-r from-gray-800/90 to-gray-900/90 backdrop-blur-md p-1 rounded-2xl border border-white/10 shadow-lg overflow-hidden max-w-[85%]">
-                <div className="p-4">
-                  <p className="text-gray-100 mb-3">Here's information about Interstellar:</p>
-                </div>
-                
-                {/* Movie card with rich details */}
-                <div className="bg-gradient-to-b from-gray-900 to-black/80 rounded-xl overflow-hidden border border-white/5">
-                  <div className="relative h-40 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent z-10"></div>
-                    <div className="absolute bottom-0 left-0 p-4 z-20">
-                      <h4 className="text-xl font-bold text-white">Interstellar</h4>
-                      <div className="flex items-center">
-                        <span className="text-gray-300 text-sm">2014</span>
-                        <span className="mx-2 text-gray-400">•</span>
-                        <span className="text-gray-300 text-sm">PG-13</span>
-                        <span className="mx-2 text-gray-400">•</span>
-                        <span className="text-gray-300 text-sm">169 min</span>
-                      </div>
-                    </div>
-                    <div className="absolute top-2 right-2 bg-black/70 rounded-full px-2 py-1 flex items-center z-20">
-                      <BsStarFill className="text-yellow-500 mr-1 text-xs" />
-                      <span className="text-white text-sm font-medium">8.7/10</span>
-                    </div>
-                    <div className="w-full h-full bg-gradient-to-r from-purple-900/30 to-pink-900/30"></div>
-                  </div>
-                  
-                  <div className="p-4">
-                    <div className="mb-3">
-                      <span className="inline-block bg-purple-600/20 border border-purple-600/30 text-purple-300 text-xs font-medium px-2 py-1 rounded mr-2 mb-2">Sci-Fi</span>
-                      <span className="inline-block bg-blue-600/20 border border-blue-600/30 text-blue-300 text-xs font-medium px-2 py-1 rounded mr-2 mb-2">Adventure</span>
-                      <span className="inline-block bg-pink-600/20 border border-pink-600/30 text-pink-300 text-xs font-medium px-2 py-1 rounded mb-2">Drama</span>
-                    </div>
-                    
-                    <p className="text-gray-300 text-sm mb-3">
-                      A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival. Directed by Christopher Nolan and starring Matthew McConaughey, Anne Hathaway, and Jessica Chastain.
-                    </p>
-                    
-                    <div className="border-t border-gray-800 pt-3 mt-3">
-                      <p className="text-gray-400 text-xs mb-2">Would you like to:</p>
-                      <div className="flex flex-wrap gap-2">
-                        <button className="bg-purple-600/20 hover:bg-purple-600/30 transition-colors border border-purple-600/30 text-purple-300 text-xs px-3 py-1.5 rounded-full">
-                          Watch Trailer
-                        </button>
-                        <button className="bg-blue-600/20 hover:bg-blue-600/30 transition-colors border border-blue-600/30 text-blue-300 text-xs px-3 py-1.5 rounded-full">
-                          See Cast
-                        </button>
-                        <button className="bg-pink-600/20 hover:bg-pink-600/30 transition-colors border border-pink-600/30 text-pink-300 text-xs px-3 py-1.5 rounded-full">
-                          Similar Movies
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-          
-          {/* Enhanced chat input with animations */}
-          <div className="bg-gradient-to-r from-gray-900/90 to-gray-800/90 px-4 py-4 border-t border-white/10 flex items-center">
-            <div className="flex-1 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center group focus-within:border-purple-500/50 focus-within:bg-white/10 transition-all duration-300">
-              <input 
-                type="text" 
-                placeholder="Ask Ginie about movies and shows..."
-                className="bg-transparent border-none outline-none text-white w-full text-sm placeholder:text-gray-500"
-              />
-              <div className="flex items-center space-x-2">
-                <button className="text-gray-400 hover:text-white transition-colors p-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                  </svg>
-                </button>
-                <button className="text-gray-400 hover:text-white transition-colors p-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="ml-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 rounded-full w-12 h-12 flex items-center justify-center shadow-lg shadow-purple-600/20"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </motion.button>
-          </div>
-        </div>
-        
-        {/* Decorative elements with enhanced effects */}
-        <div className="absolute -left-6 -bottom-6 w-32 h-32 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-full blur-3xl -z-10"></div>
-        <div className="absolute -right-6 -top-6 w-40 h-40 bg-gradient-to-br from-blue-500/30 to-purple-500/30 rounded-full blur-3xl -z-10"></div>
-        
-        {/* Floating tech particles */}
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white/80 z-10"
-            initial={{
-              x: Math.random() * 300 - 150,
-              y: Math.random() * 300 - 150,
-              scale: Math.random() * 0.5 + 0.5,
-              opacity: Math.random() * 0.5 + 0.3
-            }}
-            animate={{
-              x: [
-                Math.random() * 100 - 50,
-                Math.random() * 100 - 50
-              ],
-              y: [
-                Math.random() * 100 - 50,
-                Math.random() * 100 - 50
-              ],
-              opacity: [Math.random() * 0.3 + 0.2, Math.random() * 0.5 + 0.3]
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              repeatType: "reverse"
-            }}
-            style={{
-              width: Math.random() * 6 + 2 + 'px',
-              height: Math.random() * 6 + 2 + 'px',
-              filter: 'blur(1px)',
-            }}
-          />
-        ))}
-      </motion.div>
-      
-      {/* Right: AI Features & Mood-based Selection with enhanced visuals */}
-      <motion.div 
-        initial={{ opacity: 0, x: 20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.4 }}
-      >
-        <div className="relative">
-          {/* Header with animated highlight */}
-          <h3 className="text-2xl font-bold mb-8 inline-block relative">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-              Discover the Magic of AI-Powered Recommendations
-            </span>
-            <motion.div 
-              className="absolute -bottom-2 left-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
-              initial={{ width: 0 }}
-              whileInView={{ width: '100%' }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              viewport={{ once: true }}
-            ></motion.div>
-          </h3>
-          
-          {/* Enhanced AI Features with hover effects */}
-          <div className="space-y-6 mb-12">
-            {[
-              {
-                icon: <BiSearchAlt className="text-purple-500 text-xl" />,
-                title: "Natural Language Search",
-                description: "Ask for movies in natural language like 'find me sci-fi movies with time travel' or 'show me comedies with Ryan Reynolds'"
-              },
-              {
-                icon: <MdOutlineMood className="text-cyan-500 text-xl" />,
-                title: "Mood-Based Recommendations",
-                description: "Tell Ginie how you're feeling and get personalized content that matches your emotional state"
-              },
-              {
-                icon: <BiCameraMovie className="text-pink-500 text-xl" />,
-                title: "Movie Expert Knowledge",
-                description: "Ask specific questions about actors, directors, plots, or get recommendations similar to your favorite films"
-              }
-            ].map((feature, index) => (
-              <motion.div 
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.7 + index * 0.15 }}
-                whileHover={{ scale: 1.03, y: -5 }}
-                className="flex p-5 rounded-2xl bg-gradient-to-br from-gray-900 to-black/60 backdrop-blur-md border border-white/10 shadow-xl group transition-all duration-300 hover:shadow-purple-500/10 hover:border-purple-500/30"
-              >
-                <div className="mr-5 p-4 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 shadow-inner group-hover:from-purple-900/30 group-hover:to-pink-900/30 transition-all duration-300">
-                  {feature.icon}
-                </div>
-                <div>
-                  <h4 className="font-bold text-white text-lg mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
-                    {feature.title}
-                  </h4>
-                  <p className="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-all duration-300">
-                    {feature.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          
-          {/* Enhanced Mood-based Selection Preview with glass morphism design */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 1 }}
-            className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-purple-500/20 transition-all duration-500"
-          >
-            {/* Animated background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-pink-900/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-            
-            {/* Decorative corner highlights */}
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-700"></div>
-            <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all duration-700"></div>
-            
-            <div className="relative z-10">
-              <h4 className="font-bold text-xl mb-6 flex items-center bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">
-                <MdOutlineMood className="text-purple-400 mr-3 text-2xl" />
-                How are you feeling today?
-              </h4>
-              
-              {/* Enhanced mood selection UI */}
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
-                {moods.map((mood, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => handleMoodSelect(mood.id)}
-                    whileHover={{ y: -5, scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${
-                      selectedMood === mood.id 
-                        ? 'bg-gradient-to-br from-purple-600/40 to-pink-600/40 shadow-lg shadow-purple-600/20 border border-purple-500/50'
-                        : 'bg-white/5 border border-white/10 hover:bg-white/10'
-                    }`}
+                  {/* Enhanced Mood-based Selection Preview with glass morphism design */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 1 }}
+                    className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-purple-500/20 transition-all duration-500"
                   >
-                    <div 
-                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-all duration-300 ${
-                        selectedMood === mood.id 
-                          ? 'bg-gradient-to-br from-purple-500/80 to-pink-500/80 shadow-lg shadow-purple-600/30'
-                          : `bg-${mood.color}20`
-                      }`}
-                      style={{ color: selectedMood === mood.id ? 'white' : mood.color }}
-                    >
-                      <MdOutlineMood className="text-2xl" />
-                    </div>
-                    <span className={`text-sm transition-all duration-300 ${
-                      selectedMood === mood.id ? 'text-white' : 'text-gray-400'
-                    }`}>
-                      {mood.name}
-                    </span>
-                  </motion.button>
-                ))}
-              </div>
-              
-              {/* Enhanced mood recommendation preview */}
-              <AnimatePresence>
-                {selectedMood && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20, height: 0 }}
-                    animate={{ opacity: 1, y: 0, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="mt-6"
-                  >
-                    <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-xl border border-purple-500/30 overflow-hidden">
-                      <div className="p-5">
-                        <div className="flex items-center mb-4">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
-                            <GiBrain className="text-white text-xs" />
-                          </div>
-                          <h5 className="font-semibold text-white">Ginie's Mood Recommendations</h5>
-                        </div>
-                        
-                        <p className="text-gray-300 text-sm leading-relaxed">
-                          {selectedMood === 1 && "Based on your happy mood, I recommend these uplifting choices to amplify your positive feelings:"}
-                          {selectedMood === 2 && "When you're feeling sad, these thoughtfully selected titles can help process emotions:"}
-                          {selectedMood === 3 && "For your excited energy, these action-packed adventures would be perfect matches:"}
-                          {selectedMood === 4 && "To complement your relaxed state, consider these calming selections:"}
-                          {selectedMood === 5 && "When you're feeling scared, these comforting films can help ease anxiety:"}
-                          {selectedMood === 6 && "For romantic feelings, these heartwarming stories will resonate with your mood:"}
-                        </p>
-                        
-                        {/* Movie recommendations based on mood */}
-                        <div className="mt-4 space-y-2">
-                          {[...Array(3)].map((_, i) => (
-                            <motion.div 
-                              key={i}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: 0.2 + i * 0.1 }}
-                              className="flex items-center bg-white/5 rounded-lg p-2 border border-white/10 hover:bg-white/10 transition-all cursor-pointer group"
+                    {/* Animated background gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 to-pink-900/5 opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                    
+                    {/* Decorative corner highlights */}
+                    <div className="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-all duration-700"></div>
+                    <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl group-hover:bg-pink-500/20 transition-all duration-700"></div>
+                    
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-xl mb-6 flex items-center bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">
+                        <MdOutlineMood className="text-purple-400 mr-3 text-2xl" />
+                        How are you feeling today?
+                      </h4>
+                      
+                      {/* Enhanced mood selection UI */}
+                      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-6">
+                        {moods.map((mood, index) => (
+                          <motion.button
+                            key={index}
+                            onClick={() => handleMoodSelect(mood.id)}
+                            whileHover={{ y: -5, scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${
+                              selectedMood === mood.id 
+                                ? 'bg-gradient-to-br from-purple-600/40 to-pink-600/40 shadow-lg shadow-purple-600/20 border border-purple-500/50'
+                                : 'bg-white/5 border border-white/10 hover:bg-white/10'
+                            }`}
+                          >
+                            <div 
+                              className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-all duration-300 ${
+                                selectedMood === mood.id 
+                                  ? 'bg-gradient-to-br from-purple-500/80 to-pink-500/80 shadow-lg shadow-purple-600/30'
+                                  : `bg-${mood.color}20`
+                              }`}
+                              style={{ color: selectedMood === mood.id ? 'white' : mood.color }}
                             >
-                              <div className="w-8 h-8 rounded-md bg-gradient-to-br from-purple-600/30 to-pink-600/30 flex items-center justify-center mr-3">
-                                <RiMovieLine className="text-purple-400 group-hover:text-purple-300 transition-colors" />
-                              </div>
-                              <div className="flex-1">
-                                <h6 className="text-sm font-medium text-white">
-                                  {selectedMood === 1 && ["The Secret Life of Walter Mitty", "Soul", "Little Miss Sunshine"][i]}
-                                  {selectedMood === 2 && ["Good Will Hunting", "The Pursuit of Happyness", "Life is Beautiful"][i]}
-                                  {selectedMood === 3 && ["Mad Max: Fury Road", "Mission: Impossible", "John Wick"][i]}
-                                  {selectedMood === 4 && ["Lost in Translation", "The Secret Garden", "Her"][i]}
-                                  {selectedMood === 5 && ["Coraline", "Spirited Away", "The Nightmare Before Christmas"][i]}
-                                  {selectedMood === 6 && ["Before Sunrise", "The Notebook", "La La Land"][i]}
-                                </h6>
-                              </div>
-                              <div className="flex items-center">
-                                <BsStarFill className="text-yellow-500 text-xs mr-1" />
-                                <span className="text-gray-400 text-xs">
-                                  {(Math.random() * 2 + 7).toFixed(1)}
-                                </span>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                        
-                        {/* See more button */}
-                        <motion.button
-                          whileHover={{ y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-all duration-300"
-                        >
-                          <span>See All Recommendations</span>
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </motion.button>
+                              <MdOutlineMood className="text-2xl" />
+                            </div>
+                            <span className={`text-sm transition-all duration-300 ${
+                              selectedMood === mood.id ? 'text-white' : 'text-gray-400'
+                            }`}>
+                              {mood.name}
+                            </span>
+                          </motion.button>
+                        ))}
                       </div>
+                      
+                      {/* Enhanced mood recommendation preview */}
+                      <AnimatePresence>
+                        {selectedMood && (
+                          <motion.div 
+                            initial={{ opacity: 0, y: 20, height: 0 }}
+                            animate={{ opacity: 1, y: 0, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="mt-6"
+                          >
+                            <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-md rounded-xl border border-purple-500/30 overflow-hidden">
+                              <div className="p-5">
+                                <div className="flex items-center mb-4">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mr-3 shadow-lg shadow-purple-500/20">
+                                    <GiBrain className="text-white text-xs" />
+                                  </div>
+                                  <h5 className="font-semibold text-white">Ginie's Mood Recommendations</h5>
+                                </div>
+                                
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                  {selectedMood === 1 && "Based on your happy mood, I recommend these uplifting choices to amplify your positive feelings:"}
+                                  {selectedMood === 2 && "When you're feeling sad, these thoughtfully selected titles can help process emotions:"}
+                                  {selectedMood === 3 && "For your excited energy, these action-packed adventures would be perfect matches:"}
+                                  {selectedMood === 4 && "To complement your relaxed state, consider these calming selections:"}
+                                  {selectedMood === 5 && "When you're feeling scared, these comforting films can help ease anxiety:"}
+                                  {selectedMood === 6 && "For romantic feelings, these heartwarming stories will resonate with your mood:"}
+                                </p>
+                                
+                                {/* Movie recommendations based on mood */}
+                                <div className="mt-4 space-y-2">
+                                  {[...Array(3)].map((_, i) => (
+                                    <motion.div 
+                                      key={i}
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: 0.2 + i * 0.1 }}
+                                      className="flex items-center bg-white/5 rounded-lg p-2 border border-white/10 hover:bg-white/10 transition-all cursor-pointer group"
+                                    >
+                                      <div className="w-8 h-8 rounded-md bg-gradient-to-br from-purple-600/30 to-pink-600/30 flex items-center justify-center mr-3">
+                                        <RiMovieLine className="text-purple-400 group-hover:text-purple-300 transition-colors" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <h6 className="text-sm font-medium text-white">
+                                          {selectedMood === 1 && ["The Secret Life of Walter Mitty", "Soul", "Little Miss Sunshine"][i]}
+                                          {selectedMood === 2 && ["Good Will Hunting", "The Pursuit of Happyness", "Life is Beautiful"][i]}
+                                          {selectedMood === 3 && ["Mad Max: Fury Road", "Mission: Impossible", "John Wick"][i]}
+                                          {selectedMood === 4 && ["Lost in Translation", "The Secret Garden", "Her"][i]}
+                                          {selectedMood === 5 && ["Coraline", "Spirited Away", "The Nightmare Before Christmas"][i]}
+                                          {selectedMood === 6 && ["Before Sunrise", "The Notebook", "La La Land"][i]}
+                                        </h6>
+                                      </div>
+                                      <div className="flex items-center">
+                                        <BsStarFill className="text-yellow-500 text-xs mr-1" />
+                                        <span className="text-gray-400 text-xs">
+                                          {(Math.random() * 2 + 7).toFixed(1)}
+                                        </span>
+                                      </div>
+                                    </motion.div>
+                                  ))}
+                                </div>
+                                
+                                {/* See more button */}
+                                <motion.button
+                                  whileHover={{ y: -2 }}
+                                  whileTap={{ scale: 0.98 }}
+                                  className="mt-4 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 px-4 rounded-lg flex items-center justify-center transition-all"
+                                >
+                                  <span>See All Recommendations</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                  </svg>
+                                </motion.button>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   </motion.div>
-                )}
-              </AnimatePresence>
+                  
+                  {/* Try it now button with animations */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 1.2 }}
+                    className="mt-8 text-center"
+                  >
+                    <motion.button 
+                      onClick={handleDownload}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center mx-auto transition-all"
+                    >
+                      <FaDownload className="mr-2" />
+                      Get Ginie AI Now
+                    </motion.button>
+                  </motion.div>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-          
-          {/* Try it now button with animations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 1.2 }}
-            className="mt-8 text-center"
-          >
-            <motion.button 
-              onClick={handleDownload}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center mx-auto transition-all duration-300"
-            >
-              <FaDownload className="mr-2" />
-              Get Ginie AI Now
-            </motion.button>
-          </motion.div>
-        </div>
-      </motion.div>
-    </div>
-  </div>
-  
-  
-</section>
+          </div>
+        </section>
 
         {/* Screenshots Section with 3D carousel */}
         <section
           id="screenshots"
           ref={screenshotsRef}
-          className="py-24 bg-gradient-to-b from-black to-gray-950 relative"
+          className="py-24 bg-gradient-to-b from-black to-gray-950 relative will-change-transform"
         >
           {/* Abstract background shapes */}
           <div className="absolute inset-0 overflow-hidden">
@@ -1628,12 +1737,12 @@ const Page = () => {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/10 to-pink-900/10 rounded-full blur-3xl"
+              className="absolute -top-1/4 -right-1/4 w-1/2 h-1/2 bg-gradient-to-br from-purple-900/10 to-pink-900/10 rounded-full blur-3xl particle-animation"
             ></motion.div>
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/10 to-blue-900/10 rounded-full blur-3xl"
+              className="absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 bg-gradient-to-br from-indigo-900/10 to-blue-900/10 rounded-full blur-3xl particle-animation"
             ></motion.div>
           </div>
 
@@ -1724,7 +1833,7 @@ const Page = () => {
                       scale: 0.8,
                       rotateY: 30,
                     }}
-                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block z-10"
+                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
                   >
                     <Image
                       src={
@@ -1756,7 +1865,7 @@ const Page = () => {
                       scale: 0.8,
                       rotateY: -30,
                     }}
-                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block z-10"
+                    className="absolute top-1/2 left-1/2 transform -translate-y-1/2 -translate-x-1/2 w-72 h-[36rem] rounded-[2.5rem] overflow-hidden border-8 border-gray-900 shadow-xl hidden lg:block"
                   >
                     <Image
                       src={
@@ -1841,7 +1950,7 @@ const Page = () => {
         <section
           id="testimonials"
           ref={testimonialsRef}
-          className="py-24 bg-gray-950"
+          className="py-24 bg-gray-950 will-change-transform"
         >
           <div className="container mx-auto px-4">
             <motion.div
@@ -1941,7 +2050,7 @@ const Page = () => {
         </section>
 
         {/* FAQ Section with premium accordions */}
-        <section id="faq" className="py-24 bg-black">
+        <section id="faq" className="py-24 bg-black will-change-transform">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -2036,7 +2145,7 @@ const Page = () => {
         <section
           id="download"
           ref={downloadRef}
-          className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-950 to-black"
+          className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-950 to-black will-change-transform"
         >
           {/* Animated background elements */}
           <div className="absolute inset-0">
@@ -2051,7 +2160,7 @@ const Page = () => {
                 duration: 30,
                 ease: "linear",
               }}
-              className="absolute -right-1/4 -top-1/4 w-1/2 h-1/2 bg-purple-700/10 rounded-full blur-3xl"
+              className="absolute -right-1/4 -top-1/4 w-1/2 h-1/2 bg-purple-700/10 rounded-full blur-3xl particle-animation"
             ></motion.div>
             <motion.div
               animate={{
@@ -2064,7 +2173,7 @@ const Page = () => {
                 duration: 40,
                 ease: "linear",
               }}
-              className="absolute -left-1/4 -bottom-1/4 w-1/2 h-1/2 bg-pink-700/10 rounded-full blur-3xl"
+              className="absolute -left-1/4 -bottom-1/4 w-1/2 h-1/2 bg-pink-700/10 rounded-full blur-3xl particle-animation"
             ></motion.div>
           </div>
 
@@ -2137,7 +2246,7 @@ const Page = () => {
                     onClick={handleDownload}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-full shadow-lg flex items-center justify-center transition-all"
                   >
                     <FaDownload className="mr-2" />
                     Download Now
@@ -2243,7 +2352,7 @@ const Page = () => {
                 },
                 {
                   name: "Web",
-                  icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm7.36 6.58A8.82 8.82 0 0 1 20 12c0 1.3-.28 2.54-.79 3.66a5 5 0 0 0-3.85-2.07v-.02A2.75 2.75 0 0 1 12.6 11a2.75 2.75 0 0 1-2.75 2.75v.02a5 5 0 0 0-3.85 2.07A8.77 8.77 0 0 1 5.21 12c0-1.19.24-2.32.65-3.37A5 5 0 0 0 12 13a5 5 0 0 0 6.12-4.41c.43 0 .85.04 1.24.11z",
+                  icon: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm7.36 6.58A8.82 8.82 0 0 1 20 12c0 1.3-.28 2.54-.79 3.66a5 5 0 0 0-3.85-2.07v-.02A2.75 2.75 0 0 1 12.6 11a2.75 2.75 0 0 1-2.75 2.75 2.75 2.75 0 0 1-2.75-2.75 2.75 2.75 0 0 1 2.76-2.75c.91 0 1.62.45 2.12 1.09A6 6 0 0 1 4.84 6.84 8.05 8.05 0 0 1 12 4c2.76 0 5.26 1.4 6.93 3.59z",
                 },
               ].map((device, index) => (
                 <div key={index} className="flex flex-col items-center">
@@ -2305,7 +2414,7 @@ const Page = () => {
                     href="https://x.com/PixelNiladri"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-white/5 hover:bg-blue-600/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-blue-600/50"
+                    className="bg-white/5 hover:bg-blue-600/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-blue-600/30"
                   >
                     <FaTwitter className="text-blue-400" />
                   </a>
@@ -2313,7 +2422,7 @@ const Page = () => {
                     href="https://github.com/NiladriHazra"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-white/5 hover:bg-gray-700/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-gray-600/50"
+                    className="bg-white/5 hover:bg-gray-700/30 transition-colors duration-300 w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-gray-600/30"
                   >
                     <FaGithub className="text-white" />
                   </a>
@@ -2354,7 +2463,7 @@ const Page = () => {
                       className="text-gray-400 hover:text-purple-400 transition-colors duration-300"
                     >
                       Testimonials
-                    </a>
+                      </a>
                   </li>
                   <li>
                     <a
@@ -2410,45 +2519,68 @@ const Page = () => {
       </div>
 
       {/* Custom CSS for navigation links with underline effect */}
-      {/* At the bottom of your component */}
-<style jsx>{`
-  .nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(to right, #a78bfa, #ec4899);
-    transition: width 0.3s ease;
-  }
-  .nav-link:hover {
-    color: white;
-  }
-  .nav-link:hover::after {
-    width: 100%;
-  }
-  
-  /* Add the AI typing animation styles here */
-  .typewriter p {
-    overflow: hidden;
-    border-right: 3px solid transparent;
-    white-space: normal;
-    margin: 0;
-    letter-spacing: 0.15em;
-    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
-  }
-  
-  @keyframes typing {
-    from { max-width: 0 }
-    to { max-width: 100% }
-  }
-  
-  @keyframes blink-caret {
-    from, to { border-color: transparent }
-    50% { border-color: transparent }
-  }
-`}</style>
+      <style jsx>{`
+        .nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(to right, #a78bfa, #ec4899);
+          transition: width 0.3s ease;
+        }
+        .nav-link:hover {
+          color: white;
+        }
+        .nav-link:hover::after {
+          width: 100%;
+        }
+        
+        /* Add the AI typing animation styles here */
+        .typewriter p {
+          overflow: hidden;
+          border-right: 3px solid transparent;
+          white-space: normal;
+          margin: 0;
+          letter-spacing: 0.15em;
+          animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        
+        @keyframes typing {
+          from { max-width: 0 }
+          to { max-width: 100% }
+        }
+        
+        @keyframes blink-caret {
+          from, to { border-color: transparent }
+          50% { border-color: transparent }
+        }
+
+        /* Optimize scrolling performance */
+        * {
+          -webkit-overflow-scrolling: touch;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+
+        /* Carousel animation */
+        .image-carousel {
+          transition: transform 0.5s ease-in-out;
+        }
+
+        /* Disable hover effects on mobile for better performance */
+        @media (max-width: 767px) {
+          .will-change-transform {
+            will-change: transform;
+          }
+
+          /* Reduce motion on mobile */
+          .particle-animation {
+            display: none;
+          }
+        }
+      `}</style>
     </>
   );
 };
