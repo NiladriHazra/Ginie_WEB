@@ -363,17 +363,17 @@ const Page = () => {
   }, [phoneImages.length]);
 
   // Add this effect to prevent body scrolling when modal is open
-useEffect(() => {
-  if (showDownloadModal) {
-    document.body.style.overflow = 'hidden';
-  } else {
-    document.body.style.overflow = 'auto';
-  }
+// useEffect(() => {
+//   if (showDownloadModal) {
+//     document.body.style.overflow = 'hidden';
+//   } else {
+//     document.body.style.overflow = 'auto';
+//   }
 
-  return () => {
-    document.body.style.overflow = 'auto';
-  };
-}, [showDownloadModal]);
+//   return () => {
+//     document.body.style.overflow = 'auto';
+//   };
+// }, [showDownloadModal]);
 
   // Handle download click with Google Drive link
   // Replace your existing handleDownload function
@@ -383,54 +383,62 @@ useEffect(() => {
     console.log("Modal state after click:", showDownloadModal); // Add this debug line
   };
   // Add this new function to handle the actual download after form submission
-  const handleDownloadSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setFormError("");
+  // Add this new function to handle the actual download after form submission
+const handleDownloadSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setFormError("");
 
-    // Validate form data
-    if (!downloadFormData.name.trim() || !downloadFormData.email.trim()) {
-      setFormError("Name and email are required");
-      setIsSubmitting(false);
-      return;
+  // Validate form data
+  if (!downloadFormData.name.trim() || !downloadFormData.email.trim()) {
+    setFormError("Name and email are required");
+    setIsSubmitting(false);
+    return;
+  }
+
+  try {
+    console.log("Sending download data to API...");
+    
+    // Send user data to your API
+    const response = await fetch("/api/track-download", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: downloadFormData.name,
+        email: downloadFormData.email,
+        phone: downloadFormData.phone || "",
+        downloadDate: new Date().toISOString(),
+      }),
+    });
+
+    // Get the detailed response
+    const result = await response.json();
+    console.log("API response:", result);
+
+    if (!response.ok) {
+      console.error("Server error details:", result);
+      throw new Error(result.details || result.error || "Failed to record download");
     }
 
-    try {
-      // Send user data to your API
-      const response = await fetch("/api/track-download", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: downloadFormData.name,
-          email: downloadFormData.email,
-          phone: downloadFormData.phone || "",
-          downloadDate: new Date().toISOString(),
-        }),
-      });
+    // Close modal and show thank you message
+    setShowDownloadModal(false);
+    setShowThankYou(true);
+    setTimeout(() => setShowThankYou(false), 3000);
 
-      if (!response.ok) {
-        throw new Error("Failed to record download");
-      }
-
-      // Close modal and show thank you message
-      setShowDownloadModal(false);
-      setShowThankYou(true);
-      setTimeout(() => setShowThankYou(false), 3000);
-
-      // Initiate the actual download
-      window.open(
-        "https://drive.google.com/file/d/1Sj2wkoRtmJajaYT_fekKH3TDkR5Df2p7/view",
-        "_blank"
-      );
-    } catch (error) {
-      console.error("Download tracking error:", error);
-      setFormError("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    // Initiate the actual download
+    window.open(
+      "https://drive.google.com/file/d/1Sj2wkoRtmJajaYT_fekKH3TDkR5Df2p7/view",
+      "_blank"
+    );
+  } catch (error) {
+    console.error("Download tracking error:", error);
+    setFormError(`Error: ${error.message || "Something went wrong. Please try again."}`);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   // Handle mood selection
   const handleMoodSelect = (moodId) => {
