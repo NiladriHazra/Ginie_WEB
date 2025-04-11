@@ -21,9 +21,16 @@ export async function POST(request) {
       userAgent: request.headers.get('user-agent') || 'Unknown',
     };
     
+    // Connection debug log
+    console.log('Attempting to connect to MongoDB...');
+    
     // Store the download information in MongoDB
     const client = await clientPromise;
+    console.log('MongoDB connection established');
+    
     const db = client.db(process.env.MONGODB_DB_NAME);
+    console.log(`Using database: ${process.env.MONGODB_DB_NAME}`);
+    
     const result = await db.collection('downloads').insertOne(downloadRecord);
     
     console.log(`New download recorded: ${data.name} (${data.email})`);
@@ -33,9 +40,9 @@ export async function POST(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Download tracking error:', error);
+    console.error('Download tracking error details:', error);
     return NextResponse.json(
-      { error: 'Failed to record download' },
+      { error: 'Failed to record download', details: error.message },
       { status: 500 }
     );
   }

@@ -378,7 +378,7 @@ useEffect(() => {
   // Handle download click with Google Drive link
   // Replace your existing handleDownload function
   const handleDownload = () => {
-    console.log("Download button clicked"); // Add this debug line
+    console.log("Download button clicked");
     setShowDownloadModal(true);
     console.log("Modal state after click:", showDownloadModal); // Add this debug line
   };
